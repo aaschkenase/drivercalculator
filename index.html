@@ -3,131 +3,144 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
-    <title>Tag Driver Pro | Fleet Intelligence</title>
+    <title>Tag Driver Pro | Verified Routing</title>
     <style>
         :root { 
             --bg: #0b0f1a; --card: #161e2e; --border: #2d3748;
             --accent: #38bdf8; --text: #f1f5f9; --muted: #94a3b8;
             --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
         }
-        * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         
         nav { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid var(--border); padding-bottom: 12px; overflow-x: auto; }
-        .nav-btn { padding: 12px 24px; border-radius: 10px; border: none; background: transparent; color: var(--muted); cursor: pointer; font-weight: 700; white-space: nowrap; }
+        .nav-btn { padding: 12px 24px; border-radius: 10px; border: none; background: transparent; color: var(--muted); cursor: pointer; font-weight: 700; white-space: nowrap; transition: 0.2s; }
         .nav-btn.active { background: var(--accent); color: var(--bg); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .summary-box { background: #1e293b; border: 1px solid var(--border); padding: 20px; border-radius: 18px; }
-        .label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 800; margin-bottom: 8px; display: block; }
+        .summary-box { background: #1e293b; border: 1px solid var(--border); padding: 20px; border-radius: 18px; position: relative; }
+        .label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px; display: block; }
         .value { font-size: 24px; font-weight: 900; }
 
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 25px; }
         .card-header { padding: 16px 24px; border-bottom: 1px solid var(--border); font-weight: 800; font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
         .card-body { padding: 24px; }
 
-        .input-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
-        .input-group { flex: 1; min-width: 220px; }
+        .input-row { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px; }
+        .input-group { flex: 1; min-width: 200px; }
         label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-        input { background: #0f172a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; font-weight: 600; width: 100%; border: 1.5px solid var(--border); }
+        input { background: #0f172a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; font-weight: 600; width: 100%; }
         input:focus { border-color: var(--accent); outline: none; }
 
-        .btn { padding: 14px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .verified-badge { font-size: 11px; color: var(--success); margin-top: 5px; display: none; font-style: italic; }
+        .error-badge { font-size: 11px; color: var(--danger); margin-top: 5px; display: none; }
+
+        .btn { padding: 14px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; font-size: 14px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--accent); color: var(--bg); width: 100%; margin-top: 10px; }
-        .btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
-        .btn-tool { background: #334155; color: var(--accent); margin-bottom: 10px; font-size: 12px; width: auto; padding: 8px 16px; border: 1px solid var(--accent); }
-        
-        #modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card); border:1px solid var(--accent); padding:30px; border-radius:24px; z-index:1000; width:90%; max-width:400px; }
-        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; backdrop-filter: blur(4px); }
-        .breakdown-line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .btn-tool { background: #334155; color: var(--accent); font-size: 12px; padding: 10px 16px; border: 1px solid var(--border); }
+        .btn-tool:hover { background: var(--card); border-color: var(--accent); }
+
+        #modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card); border:1px solid var(--accent); padding:30px; border-radius:24px; z-index:1000; width:90%; max-width:400px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999; backdrop-filter: blur(4px); }
+        .breakdown-line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
 
         .pos { color: var(--success); }
         .neg { color: var(--danger); }
-        #status-msg { font-size: 12px; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; font-weight: bold; }
-        
+        #status-bar { position: fixed; bottom: 20px; right: 20px; background: var(--accent); color: #000; padding: 12px 24px; border-radius: 50px; font-weight: 800; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 2000; }
+
         table { width: 100%; border-collapse: collapse; }
         td, th { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
         .view-link { color: var(--accent); font-weight: 800; cursor: pointer; text-decoration: underline; font-size: 11px; text-transform: uppercase; }
 
         @media print {
-            nav, .btn, #status-msg, .no-print { display: none !important; }
-            .card { border: 1px solid #eee; box-shadow: none; }
+            nav, .btn, .no-print { display: none !important; }
+            .card { border: 1px solid #ccc; box-shadow: none; }
             body { background: white; color: black; }
         }
     </style>
 </head>
 <body>
 
+<div id="status-bar">📡 Routing...</div>
 <div id="overlay" onclick="closeModal()"></div>
 <div id="modal">
-    <h2 style="margin-top:0; font-size: 18px; color: var(--accent);">TRIP SETTLEMENT DETAIL</h2>
-    <div id="modal-content" style="font-size: 14px;"></div>
-    <button class="btn btn-primary" onclick="closeModal()" style="margin-top:20px;">Close Detail</button>
+    <h2 style="margin-top:0; color: var(--accent); font-size: 18px;">TRIP BREAKDOWN</h2>
+    <div id="modal-content"></div>
+    <button class="btn btn-primary" onclick="closeModal()" style="margin-top:20px;">Close</button>
 </div>
 
 <div class="container">
     <header style="margin-bottom:25px; display: flex; justify-content: space-between; align-items: center;">
         <div class="logo" style="font-size: 24px; font-weight: 900; letter-spacing: -1px;">TAG<span style="color:var(--accent)">DRIVER</span>PRO</div>
-        <div id="live-clock" style="font-size: 12px; color: var(--muted); font-weight: 600;"></div>
+        <div id="clock" style="font-size: 12px; color: var(--muted); font-weight: 600;"></div>
     </header>
 
     <nav class="no-print">
-        <button class="nav-btn active" onclick="showTab('dashboard', this)">Weekly Load Log</button>
+        <button class="nav-btn active" onclick="showTab('dashboard', this)">Load Manager</button>
         <button class="nav-btn" onclick="showTab('fixed', this)">Costs & Settings</button>
-        <button class="nav-btn" onclick="showTab('analytics', this)">Annual Stats</button>
+        <button class="nav-btn" onclick="showTab('analytics', this)">Yearly Stats</button>
     </nav>
 
     <div id="dashboard" class="tab-content active">
         <div class="summary-grid">
-            <div class="summary-box"><span class="label">Gross Weekly</span><div class="value" id="week_gross">$0.00</div></div>
-            <div class="summary-box"><span class="label">Weekly Miles</span><div class="value" id="week_miles">0</div></div>
+            <div class="summary-box"><span class="label">Gross Revenue</span><div class="value" id="week_gross">$0.00</div></div>
+            <div class="summary-box"><span class="label">Total Miles</span><div class="value" id="week_miles">0</div></div>
             <div class="summary-box"><span class="label">Net Profit</span><div class="value pos" id="week_profit">$0.00</div></div>
             <div class="summary-box"><span class="label">Avg RPM</span><div class="value" id="week_rpm">$0.00</div></div>
         </div>
 
         <div class="card no-print">
-            <div class="card-header">Step 1: Trip & Route Planner</div>
+            <div class="card-header">Step 1: Route Calculation</div>
             <div class="card-body">
-                <div id="status-msg"></div>
                 <div class="input-row">
-                    <div class="input-group"><label>Pickup City/State</label><input id="origin" placeholder="City, State"></div>
-                    <div class="input-group"><label>Drop City/State</label><input id="dest" placeholder="City, State"></div>
+                    <div class="input-group">
+                        <label>Pickup (City, State)</label>
+                        <input id="origin" placeholder="Ex: Chicago, IL">
+                        <div id="origin-verify" class="verified-badge"></div>
+                    </div>
+                    <div class="input-group">
+                        <label>Drop (City, State)</label>
+                        <input id="dest" placeholder="Ex: Willmar, MN">
+                        <div id="dest-verify" class="verified-badge"></div>
+                    </div>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-tool" onclick="runSmartRoute()">🗺️ Calculate Miles & DH</button>
-                    <button class="btn btn-tool" onclick="lookupTolls()" style="color: var(--warning); border-color: var(--warning);">💰 Look up Tolls</button>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn btn-tool" style="background: var(--accent); color: #000; border: none;" onclick="runSmartRoute()">📡 Calculate Miles</button>
+                    <button class="btn btn-tool" onclick="verifyGoogle()">🗺️ Verify on Google Maps</button>
+                    <button class="btn btn-tool" onclick="openTollGuru()">💰 Open TollGuru (Copy)</button>
                 </div>
-                
+
                 <div class="input-row">
-                    <div class="input-group"><label>Loaded Miles</label><input id="miles_loaded" type="number" value="0" oninput="manualUpdate()"></div>
-                    <div class="input-group"><label>Deadhead Miles</label><input id="miles_deadhead" type="number" value="0" oninput="manualUpdate()"></div>
-                    <div class="input-group"><label>Tolls / Lumper ($)</label><input id="load_tolls" type="number" value="0" oninput="manualUpdate()"></div>
+                    <div class="input-group"><label>Loaded Miles</label><input id="miles_loaded" type="number" value="0" oninput="calc()"></div>
+                    <div class="input-group"><label>Deadhead Miles</label><input id="miles_deadhead" type="number" value="0" oninput="calc()"></div>
+                    <div class="input-group"><label>Tolls / Lumper ($)</label><input id="load_tolls" type="number" value="0" oninput="calc()"></div>
                 </div>
                 <div class="input-row">
-                    <div class="input-group"><label>Gross Pay ($)</label><input id="gross" type="number" placeholder="Total revenue for load" oninput="manualUpdate()"></div>
+                    <div class="input-group"><label>Gross Load Pay ($)</label><input id="gross" type="number" placeholder="Enter Amount" oninput="calc()"></div>
                 </div>
-                <button class="btn btn-primary" onclick="addLoad()">Save Load to Weekly History</button>
+                <button class="btn btn-primary" onclick="addLoad()">Add Load to Week</button>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header">Trip History Log</div>
+            <div class="card-header">Weekly Load Log</div>
             <div style="overflow-x:auto;">
                 <table>
-                    <thead><tr><th>Route</th><th>Miles</th><th>Gross</th><th>Net Profit</th><th>Breakdown</th><th></th></tr></thead>
+                    <thead><tr><th>Route</th><th>Miles</th><th>Gross</th><th>Net</th><th>Detail</th><th></th></tr></thead>
                     <tbody id="loadList"></tbody>
                 </table>
             </div>
-            <button class="btn btn-primary" style="background:var(--border); margin-top:20px;" onclick="window.print()">Print Weekly Summary</button>
+            <button class="btn btn-tool no-print" style="margin-top:20px; width:100%" onclick="window.print()">Print Weekly Report</button>
         </div>
     </div>
 
     <div id="fixed" class="tab-content">
         <div class="card">
-            <div class="card-header">A. Weekly Fixed Business Costs</div>
+            <div class="card-header">Weekly Fixed Costs</div>
             <div class="card-body">
                 <div class="input-row">
                     <div class="input-group"><label>Truck Pmt</label><input id="f_truck" type="number" value="800"></div>
@@ -137,7 +150,7 @@
             </div>
         </div>
         <div class="card">
-            <div class="card-header">B. Weekly Extra Deductions</div>
+            <div class="card-header">Weekly Variable Deductions</div>
             <div class="card-body">
                 <div class="input-row">
                     <div class="input-group"><label>Advances</label><input id="f_adv" type="number" value="0"></div>
@@ -147,13 +160,13 @@
             </div>
         </div>
         <div class="card">
-            <div class="card-header">C. Performance settings</div>
+            <div class="card-header">Business Settings</div>
             <div class="card-body">
                 <div class="input-row">
-                    <div class="input-group"><label>Rev Split % (0.80)</label><input id="r_split" type="number" value="0.80" step="0.01"></div>
-                    <div class="input-group"><label>Net Fuel Price</label><input id="f_net" type="number" value="3.25" step="0.01"></div>
-                    <div class="input-group"><label>Maint Rate</label><input id="m_rate" type="number" value="0.17" step="0.01"></div>
-                    <div class="input-group"><label>Truck MPG</label><input id="mpg" type="number" value="6.5" step="0.1"></div>
+                    <div class="input-group"><label>Split % (0.80)</label><input id="r_split" type="number" value="0.80" step="0.01"></div>
+                    <div class="input-group"><label>Fuel Price ($)</label><input id="f_net" type="number" value="3.25" step="0.01"></div>
+                    <div class="input-group"><label>Maint ($/mi)</label><input id="m_rate" type="number" value="0.17" step="0.01"></div>
+                    <div class="input-group"><label>MPG</label><input id="mpg" type="number" value="6.5" step="0.1"></div>
                 </div>
             </div>
         </div>
@@ -161,17 +174,17 @@
 
     <div id="analytics" class="tab-content">
         <div class="summary-grid">
-            <div class="summary-box"><span class="label">YTD Gross Revenue</span><div class="value" id="ann_gross">$0.00</div></div>
+            <div class="summary-box"><span class="label">YTD Gross</span><div class="value" id="ann_gross">$0.00</div></div>
             <div class="summary-box"><span class="label">YTD Net Profit</span><div class="value pos" id="ann_profit">$0.00</div></div>
-            <div class="summary-box"><span class="label">Tax Savings Goal</span><div class="value neg" id="ann_tax">$0.00</div></div>
+            <div class="summary-box"><span class="label">Tax Fund (25%)</span><div class="value neg" id="ann_tax">$0.00</div></div>
         </div>
-        <button class="btn btn-primary" style="background:var(--danger); width:auto;" onclick="if(confirm('Wipe everything?')) {localStorage.clear(); location.reload();}">Hard Reset Database</button>
+        <button class="btn btn-primary" style="background:var(--danger); width:auto;" onclick="if(confirm('Delete all data?')){localStorage.clear();location.reload();}">Factory Reset</button>
     </div>
 </div>
 
 <script>
-    let loads = JSON.parse(localStorage.getItem('tag_v11_data') || '[]');
-    let lastDrop = localStorage.getItem('v11_last_drop') || "";
+    let loads = JSON.parse(localStorage.getItem('tag_v12_data') || '[]');
+    let lastDrop = localStorage.getItem('v12_last_drop') || "";
 
     function showTab(id, btn) {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -180,72 +193,120 @@
         btn.classList.add('active');
     }
 
-    function setStatus(msg, isError = false) {
-        const el = document.getElementById('status-msg');
-        el.style.display = 'block';
-        el.style.background = isError ? 'rgba(239, 68, 68, 0.2)' : 'rgba(56, 189, 248, 0.2)';
-        el.style.color = isError ? 'var(--danger)' : 'var(--accent)';
-        el.innerText = msg;
+    function showStatus(msg) {
+        const bar = document.getElementById('status-bar');
+        bar.innerText = msg;
+        bar.style.display = 'block';
+        setTimeout(() => { bar.style.display = 'none'; }, 3000);
     }
 
-    function lookupTolls() {
-        const origin = document.getElementById('origin').value;
-        const dest = document.getElementById('dest').value;
-        if(!origin || !dest) return alert("Enter Pickup and Drop cities first.");
-        const url = `https://tollguru.com/toll-calculator?from=${encodeURIComponent(origin)}&to=${encodeURIComponent(dest)}&vehicleType=5-axle-truck`;
-        window.open(url, '_blank');
+    async function getCoordinates(city) {
+        // Force USA search to avoid "Wilmar, Canada" or other errors
+        const q = `${city}, USA`; 
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`);
+        const data = await res.json();
+        return data[0] || null;
     }
 
     async function runSmartRoute() {
         const originStr = document.getElementById('origin').value;
         const destStr = document.getElementById('dest').value;
 
-        if (!originStr || !destStr) return setStatus("⚠️ Pickup and Drop are required.", true);
-        
-        setStatus("📡 Connecting to routing satellite...");
+        if(!originStr || !destStr) return alert("Enter Pickup and Drop cities.");
+
+        showStatus("🛰️ Verifying Cities...");
+        document.getElementById('origin-verify').style.display = 'none';
+        document.getElementById('dest-verify').style.display = 'none';
 
         try {
-            const locA = await (await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(originStr)}&limit=1`)).json();
-            const locB = await (await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(destStr)}&limit=1`)).json();
+            const locA = await getCoordinates(originStr);
+            const locB = await getCoordinates(destStr);
 
-            if (!locA[0] || !locB[0]) throw new Error("City not found");
+            if(!locA) throw new Error("Could not find Pickup city");
+            if(!locB) throw new Error("Could not find Drop city");
 
-            const routeData = await (await fetch(`https://router.project-osrm.org/route/v1/driving/${locA[0].lon},${locA[0].lat};${locB[0].lon},${locB[0].lat}?overview=false`)).json();
+            // Display Verified Names
+            document.getElementById('origin-verify').innerText = `Found: ${locA.display_name.split(',').slice(0,2).join(',')}`;
+            document.getElementById('origin-verify').style.display = 'block';
+            document.getElementById('dest-verify').innerText = `Found: ${locB.display_name.split(',').slice(0,2).join(',')}`;
+            document.getElementById('dest-verify').style.display = 'block';
+
+            showStatus("🛣️ Calculating Route...");
+            
+            // OSRM Routing
+            const routeRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${locA.lon},${locA.lat};${locB.lon},${locB.lat}?overview=false`);
+            const routeData = await routeRes.json();
+            
+            if(routeData.code !== "Ok") throw new Error("Route calculation failed");
+
+            // Convert meters to miles
             const loaded = Math.round(routeData.routes[0].distance * 0.000621371);
             document.getElementById('miles_loaded').value = loaded;
 
-            if (lastDrop) {
-                const locPrev = await (await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(lastDrop)}&limit=1`)).json();
-                if(locPrev[0]) {
-                    const dhData = await (await fetch(`https://router.project-osrm.org/route/v1/driving/${locPrev[0].lon},${locPrev[0].lat};${locA[0].lon},${locA[0].lat}?overview=false`)).json();
+            // Deadhead
+            if(lastDrop) {
+                showStatus("🚛 Calculating Deadhead...");
+                const locPrev = await getCoordinates(lastDrop);
+                if(locPrev) {
+                    const dhRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${locPrev.lon},${locPrev.lat};${locA.lon},${locA.lat}?overview=false`);
+                    const dhData = await dhRes.json();
                     document.getElementById('miles_deadhead').value = Math.round(dhData.routes[0].distance * 0.000621371);
                 }
             }
 
-            setStatus("✅ Route Calculated Successfully.");
-            manualUpdate();
-        } catch (e) {
-            setStatus("❌ Map Error: Enter miles manually or check spelling.", true);
+            showStatus("✅ Miles Updated!");
+            calc();
+
+        } catch(e) {
+            alert("Error: " + e.message + ". Please verify spelling or enter miles manually.");
+            console.error(e);
         }
     }
 
-    function manualUpdate() {
+    function verifyGoogle() {
+        const o = document.getElementById('origin').value;
+        const d = document.getElementById('dest').value;
+        if(o && d) window.open(`https://www.google.com/maps/dir/${encodeURIComponent(o)}/${encodeURIComponent(d)}`, '_blank');
+    }
+
+    function openTollGuru() {
+        const o = document.getElementById('origin').value;
+        const d = document.getElementById('dest').value;
+        if(o && d) {
+            // Copy to clipboard
+            navigator.clipboard.writeText(`${o} to ${d}`);
+            alert(`Copied "${o} to ${d}" to clipboard! You can paste this into the TollGuru search box.`);
+            window.open('https://tollguru.com/toll-calculator', '_blank');
+        } else {
+            alert("Enter cities first.");
+        }
+    }
+
+    function calc() {
+        // Inputs
         const loaded = parseFloat(document.getElementById('miles_loaded').value) || 0;
         const dh = parseFloat(document.getElementById('miles_deadhead').value) || 0;
         const gross = parseFloat(document.getElementById('gross').value) || 0;
         const tolls = parseFloat(document.getElementById('load_tolls').value) || 0;
+        
+        // Settings
         const split = parseFloat(document.getElementById('r_split').value) || 0.8;
         const fNet = parseFloat(document.getElementById('f_net').value) || 3.25;
         const mpg = parseFloat(document.getElementById('mpg').value) || 6.5;
         const mRate = parseFloat(document.getElementById('m_rate').value) || 0.17;
         
-        const weeklyFixed = ['f_truck', 'f_trailer', 'f_ins', 'f_adv', 'f_food', 'f_misc'].reduce((s, id) => s + (parseFloat(document.getElementById(id).value) || 0), 0);
+        // Fixed
+        const weeklyFixed = ['f_truck', 'f_trailer', 'f_ins', 'f_adv', 'f_food', 'f_misc']
+            .reduce((sum, id) => sum + (parseFloat(document.getElementById(id).value) || 0), 0);
 
+        // Math
         const totalMiles = loaded + dh;
         const fuel = (totalMiles / mpg) * fNet;
         const maint = totalMiles * mRate;
-        const profit = (gross * split) - fuel - maint - (weeklyFixed / 5) - tolls;
+        const fixedShare = weeklyFixed / 5;
+        const profit = (gross * split) - fuel - maint - fixedShare - tolls;
 
+        // Update UI
         const tg = loads.reduce((s,l) => s + l.gross, 0) + gross;
         const tm = loads.reduce((s,l) => s + l.miles, 0) + totalMiles;
         const tp = loads.reduce((s,l) => s + l.profit, 0) + profit;
@@ -253,51 +314,57 @@
         document.getElementById('week_gross').innerText = money(tg);
         document.getElementById('week_miles').innerText = tm.toLocaleString();
         document.getElementById('week_profit').innerText = money(tp);
-        document.getElementById('week_rpm').innerText = money(tm > 0 ? tg / tm : 0);
+        document.getElementById('week_rpm').innerText = money(tm > 0 ? tg/tm : 0);
+        
+        // Analytics
         document.getElementById('ann_gross').innerText = money(tg);
         document.getElementById('ann_profit').innerText = money(tp);
         document.getElementById('ann_tax').innerText = money(tp * 0.25);
 
-        return { profit, totalMiles, fuel, maint, fixed: weeklyFixed/5, tolls, gross, cut: gross * split };
+        return { profit, totalMiles, fuel, maint, fixedShare, tolls, gross, cut: gross*split };
     }
 
     function addLoad() {
-        const res = manualUpdate();
+        const res = calc();
         loads.push({
             route: `${document.getElementById('origin').value} ⇢ ${document.getElementById('dest').value}`,
             miles: res.totalMiles, gross: res.gross, profit: res.profit, fuel: res.fuel,
-            maint: res.maint, tolls: res.tolls, fixed: res.fixed, cut: res.cut
+            maint: res.maint, tolls: res.tolls, fixed: res.fixedShare, cut: res.cut
         });
         lastDrop = document.getElementById('dest').value;
-        localStorage.setItem('v11_last_drop', lastDrop);
+        localStorage.setItem('v12_last_drop', lastDrop);
         saveAndRender();
-        ['origin', 'dest', 'gross', 'load_tolls'].forEach(i => document.getElementById(i).value = i.includes('origin') || i.includes('dest') ? "" : 0);
+        ['origin', 'dest', 'gross', 'load_tolls'].forEach(i => document.getElementById(i).value = "");
+        document.getElementById('origin-verify').style.display='none';
+        document.getElementById('dest-verify').style.display='none';
     }
 
     function saveAndRender() {
-        localStorage.setItem('tag_v11_data', JSON.stringify(loads));
+        localStorage.setItem('tag_v12_data', JSON.stringify(loads));
         document.getElementById('loadList').innerHTML = loads.map((l, i) => `
             <tr>
-                <td style="font-weight:700;">${l.route}</td><td>${l.miles}</td><td>$${l.gross}</td>
+                <td style="font-weight:700; font-size:12px;">${l.route}</td>
+                <td>${l.miles}</td>
+                <td>${money(l.gross)}</td>
                 <td class="${l.profit >= 0 ? 'pos' : 'neg'}">${money(l.profit)}</td>
-                <td><span class="view-link" onclick="viewDetails(${i})">View Detail</span></td>
+                <td><span class="view-link" onclick="viewDetails(${i})">DETAIL</span></td>
                 <td><button onclick="removeLoad(${i})" style="color:var(--danger); background:none; border:none; cursor:pointer">✕</button></td>
             </tr>
         `).join('');
-        manualUpdate();
+        calc();
     }
 
     function viewDetails(i) {
         const l = loads[i];
         document.getElementById('modal-content').innerHTML = `
-            <div class="breakdown-line"><span>Load Gross:</span><span>${money(l.gross)}</span></div>
-            <div class="breakdown-line"><span>Split Cut (Paycheck):</span><span class="pos">${money(l.cut)}</span></div>
-            <div class="breakdown-line"><span>Fuel Burn:</span><span class="neg">-${money(l.fuel)}</span></div>
-            <div class="breakdown-line"><span>Maintenance Savings:</span><span class="neg">-${money(l.maint)}</span></div>
-            <div class="breakdown-line"><span>Tolls & Lumper:</span><span class="neg">-${money(l.tolls)}</span></div>
-            <div class="breakdown-line"><span>Fixed Cost Share:</span><span class="neg">-${money(l.fixed)}</span></div>
-            <div class="breakdown-line" style="border-top:2px solid var(--accent); margin-top:10px; font-weight:900; font-size: 16px;">
-                <span>NET TRIP PROFIT:</span><span class="${l.profit >= 0 ? 'pos' : 'neg'}">${money(l.profit)}</span>
+            <div class="breakdown-line"><span>Trip Revenue:</span><span>${money(l.gross)}</span></div>
+            <div class="breakdown-line"><span>Your Split:</span><span class="pos">${money(l.cut)}</span></div>
+            <div class="breakdown-line"><span>Fuel:</span><span class="neg">-${money(l.fuel)}</span></div>
+            <div class="breakdown-line"><span>Maintenance:</span><span class="neg">-${money(l.maint)}</span></div>
+            <div class="breakdown-line"><span>Tolls:</span><span class="neg">-${money(l.tolls)}</span></div>
+            <div class="breakdown-line"><span>Fixed Share:</span><span class="neg">-${money(l.fixed)}</span></div>
+            <div class="breakdown-line" style="border-top:2px solid var(--accent); margin-top:10px; font-weight:800; font-size:18px;">
+                <span>NET PROFIT:</span><span class="${l.profit >= 0 ? 'pos' : 'neg'}">${money(l.profit)}</span>
             </div>
         `;
         document.getElementById('modal').style.display = 'block';
@@ -308,7 +375,7 @@
     function removeLoad(i) { loads.splice(i, 1); saveAndRender(); }
     function money(v) { return '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits: 2}); }
     
-    document.getElementById('live-clock').innerText = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+    document.getElementById('clock').innerText = new Date().toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
     saveAndRender();
 </script>
 </body>
