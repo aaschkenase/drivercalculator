@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
-    <title>Tag Driver | Automated Logistics</title>
+    <title>Tag Driver Pro | Fleet Analytics</title>
     <style>
         :root { 
             --bg: #0f172a; --card: #1e293b; --border: #334155;
@@ -12,13 +12,11 @@
         }
         * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 60px; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
+        .container { max-width: 1250px; margin: 0 auto; padding: 15px; }
         
-        /* Navigation Tabs */
-        nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .nav-btn { padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--muted); cursor: pointer; font-weight: 700; }
+        nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; overflow-x: auto; }
+        .nav-btn { padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--muted); cursor: pointer; font-weight: 700; white-space: nowrap; }
         .nav-btn.active { background: var(--accent); color: var(--bg); }
-
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
@@ -29,210 +27,273 @@
         .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); background: #ffffff05; font-weight: 700; font-size: 11px; color: var(--accent); text-transform: uppercase; }
         .card-body { padding: 20px; }
 
-        .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 15px; }
-        input { background: #0f172a; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; font-weight: 600; width: 100%; }
-        .val-input { width: 120px; text-align: right; }
-
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .summary-box { background: #0ea5e910; border: 1px solid var(--accent); padding: 15px; border-radius: 12px; }
         .label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
         .value { font-size: 22px; font-weight: 800; }
 
+        .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 15px; }
+        input { background: #0f172a; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; font-weight: 600; width: 100%; }
+        .val-input { width: 130px; text-align: right; }
+
         .btn { padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; font-size: 14px; }
         .btn-primary { background: var(--accent); color: var(--bg); }
         .btn-ghost { background: var(--border); color: white; margin-top: 10px; }
+        .btn-sm { padding: 5px 10px; font-size: 11px; width: auto; background: var(--border); color: white; border-radius: 5px; }
 
         .pos { color: var(--success); }
         .neg { color: var(--danger); }
-        .loading-text { font-size: 12px; color: var(--warning); display: none; }
+        .loading-text { font-size: 12px; color: var(--warning); display: none; font-weight: bold; }
 
         table { width: 100%; border-collapse: collapse; }
         td, th { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+
+        #modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card); border:1px solid var(--accent); padding:25px; border-radius:16px; z-index:100; box-shadow:0 0 50px rgba(0,0,0,0.8); width:90%; max-width:400px; }
+        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:99; }
+
+        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .report-grid { grid-template-columns: 1fr; } }
+
+        @media print {
+            nav, .btn, .btn-sm, #status, .no-print { display: none !important; }
+            .container { width: 100%; }
+            .card { border: 1px solid #ddd; }
+        }
     </style>
 </head>
 <body>
 
+<div id="overlay" onclick="closeModal()"></div>
+<div id="modal">
+    <h3 style="margin-top:0; color:var(--accent);">Trip Breakdown</h3>
+    <div id="modal-content" style="font-size:14px; line-height:2;"></div>
+    <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+</div>
+
 <div class="container">
     <header>
         <div class="logo">TAG<span>DRIVER</span> PRO</div>
-        <div id="status" class="loading-text">Calculating Route...</div>
+        <div id="status" class="loading-text">📡 ROUTING ENGINE ACTIVE...</div>
     </header>
 
     <nav>
-        <button class="nav-btn active" onclick="showTab('dashboard')">Load Manager</button>
-        <button class="nav-btn" onclick="showTab('fixed')">Fixed Costs</button>
+        <button class="nav-btn active" onclick="showTab('dashboard', this)">Current Week</button>
+        <button class="nav-btn" onclick="showTab('fixed', this)">Costs & Settings</button>
+        <button class="nav-btn" onclick="showTab('analytics', this)">Long-Term Analytics</button>
     </nav>
 
     <div id="dashboard" class="tab-content active">
         <div class="summary-grid">
             <div class="summary-box"><div class="label">Weekly Gross</div><div class="value" id="week_gross">$0.00</div></div>
-            <div class="summary-box"><div class="label">Total Net Profit</div><div class="value pos" id="week_profit">$0.00</div></div>
-            <div class="summary-box"><div class="label">Weekly All-In RPM</div><div class="value" id="week_rpm">$0.00</div></div>
+            <div class="summary-box"><div class="label">Total Miles</div><div class="value" id="week_miles">0</div></div>
+            <div class="summary-box"><div class="label">Net Profit (After All)</div><div class="value pos" id="week_profit">$0.00</div></div>
+            <div class="summary-box"><div class="label">All-In RPM</div><div class="value" id="week_rpm">$0.00</div></div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr; gap: 20px;" id="main-layout">
-            <div class="card">
-                <div class="card-header">New Trip Entry</div>
-                <div class="card-body">
-                    <div class="input-row">
-                        <div style="flex:1"><label class="label">Origin</label><input id="origin" placeholder="City, State" onblur="autoCalcMiles()"></div>
-                        <div style="flex:1"><label class="label">Destination</label><input id="dest" placeholder="City, State" onblur="autoCalcMiles()"></div>
-                    </div>
-                    <div class="input-row">
-                        <div><label class="label">Loaded Miles</label><input id="miles_loaded" class="val-input" type="number" oninput="calc()"></div>
-                        <div><label class="label">Deadhead</label><input id="miles_deadhead" class="val-input" type="number" oninput="calc()"></div>
-                        <div><label class="label">Gross $</label><input id="gross" class="val-input" type="number" value="0" oninput="calc()"></div>
-                    </div>
-                    <button class="btn btn-primary" onclick="addLoad()">Add Load to Weekly Summary</button>
+        <div class="card no-print">
+            <div class="card-header">Add New Load</div>
+            <div class="card-body">
+                <div class="input-row">
+                    <div style="flex:1"><label class="label">Pickup</label><input id="origin" placeholder="City, State" onblur="handleLocationBlur()"></div>
+                    <div style="flex:1"><label class="label">Drop</label><input id="dest" placeholder="City, State" onblur="handleLocationBlur()"></div>
                 </div>
+                <div class="input-row">
+                    <div><label class="label">Loaded Miles</label><input id="miles_loaded" class="val-input" type="number" oninput="calc()"></div>
+                    <div><label class="label">Deadhead</label><input id="miles_deadhead" class="val-input" type="number" oninput="calc()"></div>
+                    <div><label class="label">Gross $</label><input id="gross" class="val-input" type="number" oninput="calc()"></div>
+                </div>
+                <div class="input-row">
+                    <div style="flex:1"><label class="label">Tolls / Scale / Lumper</label><input id="load_tolls" type="number" value="0" oninput="calc()"></div>
+                </div>
+                <button class="btn btn-primary" onclick="addLoad()">Add Load</button>
             </div>
+        </div>
 
-            <div class="card">
-                <div class="card-header">Weekly History</div>
-                <div style="overflow-x:auto">
-                    <table>
-                        <thead><tr><th>Route</th><th>Miles</th><th>Gross</th><th>Net</th><th></th></tr></thead>
-                        <tbody id="loadList"></tbody>
-                    </table>
-                </div>
+        <div class="card">
+            <div class="card-header">Weekly Load Log</div>
+            <div style="overflow-x:auto">
+                <table>
+                    <thead><tr><th>Route</th><th>Miles</th><th>Gross</th><th>Profit</th><th></th></tr></thead>
+                    <tbody id="loadList"></tbody>
+                </table>
+            </div>
+            <div class="card-body no-print">
+                <button class="btn btn-ghost" onclick="window.print()">Print Weekly Summary</button>
             </div>
         </div>
     </div>
 
     <div id="fixed" class="tab-content">
         <div class="card">
-            <div class="card-header">Adjust Weekly Business Costs</div>
+            <div class="card-header">1. Business Fixed Costs (Weekly)</div>
             <div class="card-body">
                 <div class="input-row"><label class="label">Truck Payment</label><input id="f_truck" class="val-input" type="number" value="800" oninput="calc()"></div>
                 <div class="input-row"><label class="label">Trailer Payment</label><input id="f_trailer" class="val-input" type="number" value="400" oninput="calc()"></div>
-                <div class="input-row"><label class="label">Insurance</label><input id="f_ins" class="val-input" type="number" value="350" oninput="calc()"></div>
-                <div class="input-row"><label class="label">Maintenance Rate ($/mi)</label><input id="m_rate" class="val-input" type="number" value="0.17" step="0.01" oninput="calc()"></div>
-                <div class="input-row"><label class="label">Revenue Split (Ex: 0.80)</label><input id="r_split" class="val-input" type="number" value="0.80" step="0.01" oninput="calc()"></div>
-                <div class="input-row"><label class="label">Fuel Net Price ($)</label><input id="f_net" class="val-input" type="number" value="3.25" step="0.01" oninput="calc()"></div>
-                <div class="input-row"><label class="label">Truck MPG</label><input id="mpg" class="val-input" type="number" value="6.5" step="0.1" oninput="calc()"></div>
-                <button class="btn btn-ghost" onclick="showTab('dashboard')">Back to Dashboard</button>
+                <div class="input-row"><label class="label">Insurance (All)</label><input id="f_ins" class="val-input" type="number" value="350" oninput="calc()"></div>
             </div>
         </div>
+        <div class="card">
+            <div class="card-header">2. Personal & Variable Deductions (Weekly)</div>
+            <div class="card-body">
+                <div class="input-row"><label class="label">Cash Advance Repayments</label><input id="f_advance" class="val-input" type="number" value="0" oninput="calc()"></div>
+                <div class="input-row"><label class="label">Extra Shop/Repair Fees</label><input id="f_repairs" class="val-input" type="number" value="0" oninput="calc()"></div>
+                <div class="input-row"><label class="label">Food & Personal Spending</label><input id="f_food" class="val-input" type="number" value="0" oninput="calc()"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">3. Performance Settings</div>
+            <div class="card-body">
+                <div class="input-row"><label class="label">Maint. Escrow ($/mi)</label><input id="m_rate" class="val-input" type="number" value="0.17" step="0.01" oninput="calc()"></div>
+                <div class="input-row"><label class="label">Revenue Split %</label><input id="r_split" class="val-input" type="number" value="0.80" step="0.01" oninput="calc()"></div>
+                <div class="input-row"><label class="label">Fuel Net Price</label><input id="f_net" class="val-input" type="number" value="3.25" step="0.01" oninput="calc()"></div>
+                <div class="input-row"><label class="label">Average MPG</label><input id="mpg" class="val-input" type="number" value="6.5" step="0.1" oninput="calc()"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="analytics" class="tab-content">
+        <div class="summary-grid">
+            <div class="summary-box"><div class="label">Total Annual Gross</div><div class="value" id="ann_gross">$0.00</div></div>
+            <div class="summary-box"><div class="label">Total Annual Profit</div><div class="value pos" id="ann_profit">$0.00</div></div>
+            <div class="summary-box"><div class="label">Avg Monthly Take-Home</div><div class="value" id="ann_monthly">$0.00</div></div>
+        </div>
+        <div class="report-grid">
+            <div class="card">
+                <div class="card-header">Tax Liability Projection</div>
+                <div class="card-body">
+                    <div class="input-row"><span>Estimated Self-Emp Tax (15.3%):</span><span id="tax_se" class="neg">$0</span></div>
+                    <div class="input-row"><span>Projected Federal Tax:</span><span id="tax_fed" class="neg">$0</span></div>
+                    <div style="border-top:1px solid var(--border); padding-top:10px; margin-top:10px;">
+                        <b>Remaining after Tax: <span id="after_tax" class="pos">$0</span></b>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">Profitability Health</div>
+                <div class="card-body">
+                    <div class="input-row"><span>Operating Expense Ratio:</span><span id="oer_val">0%</span></div>
+                    <div class="input-row"><span>Fuel Cost % of Gross:</span><span id="fuel_pct">0%</span></div>
+                    <div class="input-row"><span>Avg Weekly Miles:</span><span id="avg_miles">0</span></div>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-ghost" onclick="exportData()">Export Data to CSV</button>
+        <button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger); margin-top:20px;" onclick="hardReset()">Factory Reset All Data</button>
     </div>
 </div>
 
 <script>
-    let loads = JSON.parse(localStorage.getItem('tag_v6_data') || '[]');
-    let lastDestination = localStorage.getItem('last_dest') || "";
+    let loads = JSON.parse(localStorage.getItem('tag_v8_loads') || '[]');
+    let lastDest = localStorage.getItem('last_dest_v8') || "";
 
-    function showTab(tabId) {
+    function showTab(tabId, btn) {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
-        event.currentTarget.classList.add('active');
+        btn.classList.add('active');
     }
 
-    async function getMiles(start, end) {
-        if(!start || !end) return 0;
-        try {
-            document.getElementById('status').style.display = 'block';
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(start)}`);
-            const res2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(end)}`);
-            const d1 = await res.json();
-            const d2 = await res2.json();
-            
-            const route = await fetch(`https://router.project-osrm.org/route/v1/driving/${d1[0].lon},${d1[0].lat};${d2[0].lon},${d2[0].lat}?overview=false`);
-            const data = await route.json();
-            document.getElementById('status').style.display = 'none';
-            return Math.round(data.routes[0].distance * 0.000621371); // convert meters to miles
-        } catch (e) {
-            document.getElementById('status').style.display = 'none';
-            return 0;
-        }
-    }
-
-    async function autoCalcMiles() {
+    async function handleLocationBlur() {
         const origin = document.getElementById('origin').value;
         const dest = document.getElementById('dest').value;
-
-        // Auto Loaded Miles
-        if(origin && dest) {
-            const miles = await getMiles(origin, dest);
-            document.getElementById('miles_loaded').value = miles;
+        if (origin && dest) {
+            const loaded = await fetchMiles(origin, dest);
+            document.getElementById('miles_loaded').value = loaded;
+            if (lastDest) {
+                const dh = await fetchMiles(lastDest, origin);
+                document.getElementById('miles_deadhead').value = dh;
+            }
+            calc();
         }
+    }
 
-        // Auto Deadhead from last load
-        if(origin && lastDestination) {
-            const dh = await getMiles(lastDestination, origin);
-            document.getElementById('miles_deadhead').value = dh;
-        }
-        calc();
+    async function fetchMiles(start, end) {
+        document.getElementById('status').style.display = 'block';
+        try {
+            const sReq = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(start)}`);
+            const eReq = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(end)}`);
+            const sData = await sReq.json(); const eData = await eReq.json();
+            if (sData[0] && eData[0]) {
+                const rReq = await fetch(`https://router.project-osrm.org/route/v1/driving/${sData[0].lon},${sData[0].lat};${eData[0].lon},${eData[0].lat}?overview=false`);
+                const rData = await rReq.json();
+                document.getElementById('status').style.display = 'none';
+                return Math.round(rData.routes[0].distance * 0.000621371);
+            }
+        } catch (e) { console.error(e); }
+        document.getElementById('status').style.display = 'none';
+        return 0;
     }
 
     function calc() {
         const loaded = parseFloat(document.getElementById('miles_loaded').value) || 0;
         const dh = parseFloat(document.getElementById('miles_deadhead').value) || 0;
         const gross = parseFloat(document.getElementById('gross').value) || 0;
+        const tolls = parseFloat(document.getElementById('load_tolls').value) || 0;
         const split = parseFloat(document.getElementById('r_split').value) || 0.8;
         const fuelN = parseFloat(document.getElementById('f_net').value) || 3.25;
         const mpg = parseFloat(document.getElementById('mpg').value) || 6.5;
         const mRate = parseFloat(document.getElementById('m_rate').value) || 0.17;
+        
+        // Weekly Fixed + Extra Deductions
         const fixed = (parseFloat(document.getElementById('f_truck').value) || 0) + 
                       (parseFloat(document.getElementById('f_trailer').value) || 0) + 
-                      (parseFloat(document.getElementById('f_ins').value) || 0);
+                      (parseFloat(document.getElementById('f_ins').value) || 0) +
+                      (parseFloat(document.getElementById('f_advance').value) || 0) +
+                      (parseFloat(document.getElementById('f_repairs').value) || 0) +
+                      (parseFloat(document.getElementById('f_food').value) || 0);
 
         const totalMiles = loaded + dh;
-        const yourCut = gross * split;
-        const expenses = ((totalMiles/mpg)*fuelN) + (totalMiles*mRate) + (fixed/5);
-        const profit = yourCut - expenses;
+        const fuelCost = (totalMiles / mpg) * fuelN;
+        const maintCost = totalMiles * mRate;
+        const fixedShare = fixed / 5; // Split weekly nut across estimated 5 loads
+        const profit = (gross * split) - fuelCost - maintCost - fixedShare - tolls;
 
-        updateWeeklySummary();
-        return { profit, totalMiles };
+        updateUI(tGross = loads.reduce((s, l) => s + l.gross, 0) + gross, 
+                 tMiles = loads.reduce((s, l) => s + l.miles, 0) + totalMiles,
+                 tProfit = loads.reduce((s, l) => s + l.profit, 0) + profit);
+                 
+        return { profit, totalMiles, fuelCost, maintCost, fixedShare, tolls, gross };
+    }
+
+    function updateUI(tg, tm, tp) {
+        document.getElementById('week_gross').innerText = money(tg);
+        document.getElementById('week_miles').innerText = tm.toLocaleString();
+        document.getElementById('week_profit').innerText = money(tp);
+        document.getElementById('week_rpm').innerText = money(tm > 0 ? tg / tm : 0);
+
+        // Long term analytics
+        document.getElementById('ann_gross').innerText = money(tg);
+        document.getElementById('ann_profit').innerText = money(tp);
+        document.getElementById('tax_se').innerText = money(tp * 0.153);
+        document.getElementById('tax_fed').innerText = money(tp * 0.12);
+        document.getElementById('after_tax').innerText = money(tp * 0.727);
+        document.getElementById('oer_val').innerText = tg > 0 ? Math.round(((tg - tp)/tg)*100) + '%' : '0%';
     }
 
     function addLoad() {
         const res = calc();
-        const origin = document.getElementById('origin').value;
-        const dest = document.getElementById('dest').value;
-        
         loads.push({
-            route: `${origin} to ${dest}`,
-            miles: res.totalMiles,
-            gross: parseFloat(document.getElementById('gross').value) || 0,
-            profit: res.profit
+            route: `${document.getElementById('origin').value} to ${document.getElementById('dest').value}`,
+            miles: res.totalMiles, gross: res.gross, profit: res.profit, fuel: res.fuelCost, tolls: res.tolls
         });
-
-        lastDestination = dest;
-        localStorage.setItem('last_dest', lastDestination);
-        
-        document.getElementById('origin').value = "";
-        document.getElementById('dest').value = "";
-        document.getElementById('gross').value = 0;
-        
+        lastDest = document.getElementById('dest').value;
+        localStorage.setItem('last_dest_v8', lastDest);
         saveAndRender();
-    }
-
-    function updateWeeklySummary() {
-        const tGross = loads.reduce((sum, l) => sum + l.gross, 0);
-        const tMiles = loads.reduce((sum, l) => sum + l.miles, 0);
-        const tProfit = loads.reduce((sum, l) => sum + l.profit, 0);
-        
-        document.getElementById('week_gross').innerText = money(tGross);
-        document.getElementById('week_profit').innerText = money(tProfit);
-        document.getElementById('week_rpm').innerText = money(tMiles > 0 ? tGross / tMiles : 0);
+        ['origin', 'dest', 'gross', 'load_tolls'].forEach(id => document.getElementById(id).value = "");
     }
 
     function saveAndRender() {
-        localStorage.setItem('tag_v6_data', JSON.stringify(loads));
-        const list = document.getElementById('loadList');
-        list.innerHTML = loads.map((l, i) => `
-            <tr>
-                <td>${l.route}</td><td>${l.miles}</td><td>$${l.gross}</td>
-                <td class="${l.profit >= 0 ? 'pos' : 'neg'}">${money(l.profit)}</td>
-                <td><button onclick="removeLoad(${i})" style="color:var(--danger); background:none; border:none; cursor:pointer">✕</button></td>
-            </tr>
+        localStorage.setItem('tag_v8_loads', JSON.stringify(loads));
+        document.getElementById('loadList').innerHTML = loads.map((l, i) => `
+            <tr><td>${l.route}</td><td>${l.miles}</td><td>$${l.gross}</td><td class="${l.profit >= 0 ? 'pos' : 'neg'}">${money(l.profit)}</td>
+            <td><button class="btn-sm" onclick="removeLoad(${i})">✕</button></td></tr>
         `).join('');
-        updateWeeklySummary();
+        calc();
     }
 
-    function removeLoad(i) { loads.splice(i,1); saveAndRender(); }
-    function money(v) { return '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
-
+    function removeLoad(i) { loads.splice(i, 1); saveAndRender(); }
+    function hardReset() { if(confirm("WIPE EVERYTHING?")) { localStorage.clear(); location.reload(); } }
+    function money(v) { return '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits: 2}); }
     saveAndRender();
 </script>
 </body>
