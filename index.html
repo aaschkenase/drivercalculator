@@ -19,14 +19,14 @@
         .container { max-width: 1400px; margin: 0 auto; padding: 15px; }
 
         /* Navigation */
-        nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
-        .nav-btn { padding: 10px 20px; background: transparent; border: none; color: var(--muted); font-weight: 700; cursor: pointer; border-radius: 8px; transition: 0.2s; }
+        nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; overflow-x: auto; }
+        .nav-btn { padding: 10px 20px; background: transparent; border: none; color: var(--muted); font-weight: 700; cursor: pointer; border-radius: 8px; transition: 0.2s; white-space: nowrap; }
         .nav-btn.active { background: var(--accent); color: #000; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         /* Dashboard Layout */
-        .dash-grid { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        .dash-grid { display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
         @media (max-width: 1000px) { .dash-grid { grid-template-columns: 1fr; } }
 
         /* Cards & Inputs */
@@ -47,19 +47,22 @@
         .stat-val { font-size: 24px; font-weight: 900; }
 
         /* Map */
-        #map { height: 400px; width: 100%; border-radius: 12px; border: 1px solid var(--border); z-index: 0; }
+        #map { height: 500px; width: 100%; border-radius: 12px; border: 1px solid var(--border); z-index: 0; }
 
         /* Table */
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th { text-align: left; color: var(--muted); padding: 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; }
         td { padding: 10px; border-bottom: 1px solid var(--border); }
-        .action-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-        .action-btn:hover { color: var(--text); border-color: var(--accent); }
+        .action-btn { background: transparent; border: 1px solid var(--border); color: var(--accent); cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .action-btn:hover { background: var(--accent); color: #000; }
+        .delete-btn { color: var(--danger); border-color: var(--danger); }
+        .delete-btn:hover { background: var(--danger); color: white; }
 
         /* Buttons */
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         .btn-primary { background: var(--accent); color: #000; }
-        .btn-tool { background: #334155; color: var(--accent); margin-top: 5px; font-size: 12px; padding: 8px; }
+        .btn-tool { background: #334155; color: var(--accent); margin-top: 5px; font-size: 12px; padding: 8px; border: 1px solid var(--border); cursor: pointer; border-radius: 6px; }
+        .btn-tool:hover { background: var(--card); border-color: var(--accent); }
 
         /* Modal */
         #modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--card); border:1px solid var(--accent); padding:20px; border-radius:12px; z-index:1000; width:90%; max-width:400px; box-shadow:0 0 50px black; }
@@ -67,6 +70,7 @@
         .breakdown-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
 
         .pos { color: var(--success); } .neg { color: var(--danger); }
+        .status-msg { font-size: 12px; color: var(--warning); margin-bottom: 10px; display: none; font-weight: 700; background: rgba(234, 179, 8, 0.1); padding: 8px; border-radius: 4px; }
         
         @media print { nav, .btn, .no-print { display: none !important; } .container { width: 100%; } }
     </style>
@@ -83,7 +87,7 @@
 <div class="container">
     <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <div style="font-size:24px; font-weight:900; letter-spacing:-1px;">TAG<span style="color:var(--accent)">DRIVER</span>PRO</div>
-        <div id="status" style="font-size:12px; font-weight:700; color:var(--warning); display:none;">Processing...</div>
+        <div id="status" class="status-msg">Processing...</div>
     </header>
 
     <nav class="no-print">
@@ -201,7 +205,8 @@
 </div>
 
 <script>
-    let loads = JSON.parse(localStorage.getItem('tag_final_data') || '[]');
+    let loads = JSON.parse(localStorage.getItem('tag_v14_data') || '[]');
+    let lastDropCoords = JSON.parse(localStorage.getItem('tag_v14_last') || 'null'); // {lat, lon}
     let map = null;
 
     // --- SETUP & NAVIGATION ---
@@ -210,7 +215,7 @@
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         btn.classList.add('active');
-        if(id === 'dashboard') setTimeout(initMap, 200); // Fix map render issue
+        if(id === 'dashboard') setTimeout(initMap, 200); 
     }
 
     // --- MAP ENGINE ---
@@ -220,19 +225,16 @@
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap' }).addTo(map);
         }
         
-        // Clear layers
         map.eachLayer(layer => { if(!!layer.toGeoJSON) map.removeLayer(layer); });
 
         const points = [];
         loads.forEach((l, i) => {
             if(l.coords && l.coords.start) {
-                L.marker([l.coords.start.lat, l.coords.start.lon]).addTo(map).bindPopup(`Load ${i+1} Pickup`);
-                L.marker([l.coords.end.lat, l.coords.end.lon]).addTo(map).bindPopup(`Load ${i+1} Drop`);
+                L.marker([l.coords.start.lat, l.coords.start.lon]).addTo(map).bindPopup(`<b>Load ${i+1} Pickup</b><br>${l.origin}`);
+                L.marker([l.coords.end.lat, l.coords.end.lon]).addTo(map).bindPopup(`<b>Load ${i+1} Drop</b><br>${l.dest}`);
                 points.push([l.coords.start.lat, l.coords.start.lon]);
                 points.push([l.coords.end.lat, l.coords.end.lon]);
-                
-                // Draw line
-                L.polyline([[l.coords.start.lat, l.coords.start.lon], [l.coords.end.lat, l.coords.end.lon]], {color: '#38bdf8'}).addTo(map);
+                L.polyline([[l.coords.start.lat, l.coords.start.lon], [l.coords.end.lat, l.coords.end.lon]], {color: '#38bdf8', weight: 4, opacity: 0.7}).addTo(map);
             }
         });
 
@@ -260,14 +262,25 @@
         const locA = await getLoc(o);
         const locB = await getLoc(d);
 
-        if(!locA || !locB) { stat.innerText = "City Not Found"; return; }
+        if(!locA || !locB) { stat.innerText = "City Not Found (Check Spelling)"; return; }
 
-        stat.innerText = "Routing...";
+        // 1. Loaded Miles
+        stat.innerText = "Calculating Loaded Route...";
         const rRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${locA.lon},${locA.lat};${locB.lon},${locB.lat}?overview=false`);
         const rData = await rRes.json();
-        
         const miles = Math.round(rData.routes[0].distance * 0.000621371);
         document.getElementById('mi_load').value = miles;
+
+        // 2. Deadhead Miles (From Last Drop)
+        if(lastDropCoords) {
+            stat.innerText = "Calculating Deadhead...";
+            const dhRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${lastDropCoords.lon},${lastDropCoords.lat};${locA.lon},${locA.lat}?overview=false`);
+            const dhData = await dhRes.json();
+            const dhMiles = Math.round(dhData.routes[0].distance * 0.000621371);
+            document.getElementById('mi_dh').value = dhMiles;
+        } else {
+            document.getElementById('mi_dh').value = 0;
+        }
         
         // Save coords for map
         document.getElementById('origin').dataset.lat = locA.lat;
@@ -331,9 +344,15 @@
             coords: (oLat && dLat) ? { start:{lat:oLat, lon:oLon}, end:{lat:dLat, lon:dLon} } : null
         });
 
-        localStorage.setItem('tag_final_data', JSON.stringify(loads));
+        // Save Last Drop for Next Deadhead
+        if(dLat && dLon) {
+            lastDropCoords = { lat: dLat, lon: dLon };
+            localStorage.setItem('tag_v14_last', JSON.stringify(lastDropCoords));
+        }
+
+        localStorage.setItem('tag_v14_data', JSON.stringify(loads));
         updateUI();
-        initMap(); // Redraw map immediately
+        initMap(); 
         
         // Clear inputs
         ['origin','dest','mi_load','mi_dh','cost_tolls','pay_gross'].forEach(i => document.getElementById(i).value="");
@@ -366,13 +385,13 @@
         // Render List
         document.getElementById('loadList').innerHTML = loads.map((l,i) => `
             <tr>
-                <td style="font-weight:700">${l.origin} <span style="color:var(--accent)">➜</span> ${l.dest}</td>
+                <td style="font-weight:700; font-size:12px;">${l.origin} <span style="color:var(--accent)">➜</span> ${l.dest}</td>
                 <td>${l.miles}</td>
                 <td>${money(l.gross)}</td>
                 <td class="${l.net>=0?'pos':'neg'}">${money(l.net)}</td>
                 <td>
                     <button class="action-btn" onclick="viewDetail(${i})">Detail</button>
-                    <button class="action-btn" style="color:var(--danger); border-color:var(--danger)" onclick="del(${i})">X</button>
+                    <button class="action-btn delete-btn" onclick="del(${i})">X</button>
                 </td>
             </tr>
         `).join('');
@@ -396,7 +415,14 @@
     }
 
     function closeModal() { document.getElementById('modal').style.display='none'; document.getElementById('overlay').style.display='none'; }
-    function del(i) { loads.splice(i,1); localStorage.setItem('tag_final_data', JSON.stringify(loads)); updateUI(); initMap(); }
+    function del(i) { 
+        loads.splice(i,1); 
+        localStorage.setItem('tag_final_data', JSON.stringify(loads)); 
+        // Reset last drop if list is empty
+        if(loads.length===0) localStorage.removeItem('tag_v14_last');
+        updateUI(); 
+        initMap(); 
+    }
     function money(v) { return '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:2}); }
     
     // Tools
@@ -411,7 +437,7 @@
 
     // Init
     updateUI();
-    setTimeout(initMap, 500); // Allow DOM to settle
+    setTimeout(initMap, 500); 
 </script>
 </body>
 </html>
