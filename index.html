@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
-    <title>Tag Driver | Route & Profit Planner</title>
+    <title>Tag Driver | Automated Logistics</title>
     <style>
         :root { 
             --bg: #0f172a; --card: #1e293b; --border: #334155;
@@ -14,47 +14,40 @@
         body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 60px; }
         .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
         
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-        .logo { font-size: 22px; font-weight: 800; color: var(--accent); }
+        /* Navigation Tabs */
+        nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .nav-btn { padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--muted); cursor: pointer; font-weight: 700; }
+        .nav-btn.active { background: var(--accent); color: var(--bg); }
 
-        .main-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media (min-width: 1000px) { .main-grid { grid-template-columns: 1fr 420px; } }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .logo { font-size: 20px; font-weight: 800; color: var(--accent); }
 
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 20px; }
-        .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); background: #ffffff05; font-weight: 700; font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); background: #ffffff05; font-weight: 700; font-size: 11px; color: var(--accent); text-transform: uppercase; }
         .card-body { padding: 20px; }
 
-        .weekly-summary-bar { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-            gap: 15px; background: #0ea5e915; border: 1px solid var(--accent); 
-            padding: 20px; border-radius: 16px; margin-bottom: 25px;
-        }
-        .summary-label { font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 5px; }
-        .summary-value { font-size: 24px; font-weight: 800; color: var(--text); }
-
         .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 15px; }
-        .label-grp { flex: 1; }
-        .label-grp label { display: block; font-size: 14px; font-weight: 600; }
-        .label-grp span { font-size: 11px; color: var(--muted); display: block; }
-        
-        input, select { background: #0f172a; border: 1px solid var(--border); color: white; padding: 8px 12px; border-radius: 8px; font-weight: 600; }
-        .val-input { width: 110px; text-align: right; }
-        .full-input { width: 100%; text-align: left; margin-bottom: 8px; }
+        input { background: #0f172a; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; font-weight: 600; width: 100%; }
+        .val-input { width: 120px; text-align: right; }
 
-        .stop-row { display: flex; gap: 8px; margin-bottom: 8px; }
-        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; font-size: 13px; }
-        .btn-primary { background: var(--accent); color: var(--bg); margin-top: 10px; }
-        .btn-sec { background: var(--border); color: white; margin-top: 5px; }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 12px; width: auto; padding: 6px 12px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .summary-box { background: #0ea5e910; border: 1px solid var(--accent); padding: 15px; border-radius: 12px; }
+        .label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+        .value { font-size: 22px; font-weight: 800; }
 
-        .breakdown-list { margin-top: 10px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px; }
-        .breakdown-item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 8px; }
+        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; font-size: 14px; }
+        .btn-primary { background: var(--accent); color: var(--bg); }
+        .btn-ghost { background: var(--border); color: white; margin-top: 10px; }
+
         .pos { color: var(--success); }
         .neg { color: var(--danger); }
+        .loading-text { font-size: 12px; color: var(--warning); display: none; }
 
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; font-size: 10px; color: var(--muted); padding: 12px; border-bottom: 1px solid var(--border); text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        td, th { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
     </style>
 </head>
 <body>
@@ -62,190 +55,155 @@
 <div class="container">
     <header>
         <div class="logo">TAG<span>DRIVER</span> PRO</div>
-        <div id="date-display" style="font-size:12px; color:var(--muted); font-weight: 600;"></div>
+        <div id="status" class="loading-text">Calculating Route...</div>
     </header>
 
-    <div class="weekly-summary-bar">
-        <div class="summary-item"><span class="summary-label">Total Weekly Gross</span><span class="summary-value" id="week_gross">$0.00</span></div>
-        <div class="summary-item"><span class="summary-label">Weekly All-In RPM</span><span class="summary-value" id="week_rpm">$0.00</span></div>
-        <div class="summary-item"><span class="summary-label">Total Miles</span><span class="summary-value" id="week_miles">0</span></div>
-        <div class="summary-item"><span class="summary-label">Net Weekly Profit</span><span class="summary-value pos" id="week_profit">$0.00</span></div>
-    </div>
+    <nav>
+        <button class="nav-btn active" onclick="showTab('dashboard')">Load Manager</button>
+        <button class="nav-btn" onclick="showTab('fixed')">Fixed Costs</button>
+    </nav>
 
-    <div class="main-grid">
-        <div class="left-col">
-            <div class="card">
-                <div class="card-header">1. Route Planner</div>
-                <div class="card-body">
-                    <input id="origin" class="full-input" type="text" placeholder="Origin (City, State)">
-                    <div id="stops-container"></div>
-                    <button class="btn-outline" onclick="addStop()" style="margin-bottom: 8px;">+ Add Stop</button>
-                    <input id="destination" class="full-input" type="text" placeholder="Destination (City, State)">
-                    <button class="btn btn-sec" onclick="previewRoute()">Preview Route in Maps</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">2. Load & Mileage</div>
-                <div class="card-body">
-                    <div class="input-row">
-                        <div class="label-grp"><label>Gross Revenue</label><span>Total load pay</span></div>
-                        <input id="gross" class="val-input" type="number" value="5500" oninput="calc()">
-                    </div>
-                    <div class="input-row">
-                        <div class="label-grp"><label>Loaded Miles</label><span>Paying miles</span></div>
-                        <input id="miles_loaded" class="val-input" type="number" value="1800" oninput="calc()">
-                    </div>
-                    <div class="input-row">
-                        <div class="label-grp"><label>Deadhead Miles</label><span>Empty miles</span></div>
-                        <input id="miles_deadhead" class="val-input" type="number" value="150" oninput="calc()">
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">3. Operating Costs</div>
-                <div class="card-body">
-                    <div class="input-row">
-                        <div class="label-grp"><label>Truck MPG</label><span>Adjust for weight</span></div>
-                        <input id="mpg" class="val-input" type="number" step="0.1" value="6.5" oninput="calc()">
-                    </div>
-                    <div class="input-row">
-                        <div class="label-grp"><label>Fuel Price (Net)</label><span>Pump minus discount</span></div>
-                        <input id="fuel_net" class="val-input" type="number" step="0.01" value="3.25" oninput="calc()">
-                    </div>
-                    <div class="input-row">
-                        <div class="label-grp"><label>Maint Savings</label><span>Cents per mile</span></div>
-                        <input id="maint_rate" class="val-input" type="number" step="0.01" value="0.17" oninput="calc()">
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">4. Fixed Fees & Other</div>
-                <div class="card-body">
-                    <div class="input-row"><div class="label-grp"><label>Total Weekly Fixed</label><span>Truck/Trailer/Ins</span></div><input id="fixed_total" class="val-input" type="number" value="1550" oninput="calc()"></div>
-                    <div class="input-row"><div class="label-grp"><label>Revenue Split %</label></div><input id="revPct" class="val-input" type="number" step="0.01" value="0.80" oninput="calc()"></div>
-                    <div class="input-row"><div class="label-grp"><label>Other/Personal</label><span>Repairs, Food, Tolls</span></div><input id="exp_other" class="val-input" type="number" value="0" oninput="calc()"></div>
-                </div>
-            </div>
+    <div id="dashboard" class="tab-content active">
+        <div class="summary-grid">
+            <div class="summary-box"><div class="label">Weekly Gross</div><div class="value" id="week_gross">$0.00</div></div>
+            <div class="summary-box"><div class="label">Total Net Profit</div><div class="value pos" id="week_profit">$0.00</div></div>
+            <div class="summary-box"><div class="label">Weekly All-In RPM</div><div class="value" id="week_rpm">$0.00</div></div>
         </div>
 
-        <div class="right-col">
-            <div class="card" style="border-top: 4px solid var(--accent); position: sticky; top: 15px;">
-                <div class="card-header">Current Trip Breakdown</div>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 20px;" id="main-layout">
+            <div class="card">
+                <div class="card-header">New Trip Entry</div>
                 <div class="card-body">
-                    <div class="breakdown-list">
-                        <div class="breakdown-item"><span>Your Split Cut:</span><span id="out_cut" class="pos">$0</span></div>
-                        <div class="breakdown-item"><span>Fuel Cost:</span><span id="out_fuel" class="neg">$0</span></div>
-                        <div class="breakdown-item"><span>Maintenance:</span><span id="out_maint" class="neg">$0</span></div>
-                        <div class="breakdown-item"><span>Misc Expenses:</span><span id="out_other" class="neg">$0</span></div>
-                        <div class="breakdown-item"><span>Fixed (1/5th):</span><span id="out_fixed" class="neg">$0</span></div>
-                        <div class="breakdown-item" style="border-top: 1px solid var(--border); padding-top:10px; margin-top:10px; font-weight:800; font-size:16px;">
-                            <span>Net Profit:</span><span id="out_profit">$0</span>
-                        </div>
+                    <div class="input-row">
+                        <div style="flex:1"><label class="label">Origin</label><input id="origin" placeholder="City, State" onblur="autoCalcMiles()"></div>
+                        <div style="flex:1"><label class="label">Destination</label><input id="dest" placeholder="City, State" onblur="autoCalcMiles()"></div>
                     </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px; text-align:center;">
-                        <div style="background:#0f172a; padding:10px; border-radius:8px; border: 1px solid var(--border);">
-                            <div class="summary-label" style="font-size:9px">All-In RPM</div><div id="out_rpm" style="font-weight:800">$0.00</div>
-                        </div>
-                        <div style="background:#0f172a; padding:10px; border-radius:8px; border: 1px solid var(--border);">
-                            <div class="summary-label" style="font-size:9px">Deadhead %</div><div id="out_dh_pct" style="font-weight:800">0%</div>
-                        </div>
+                    <div class="input-row">
+                        <div><label class="label">Loaded Miles</label><input id="miles_loaded" class="val-input" type="number" oninput="calc()"></div>
+                        <div><label class="label">Deadhead</label><input id="miles_deadhead" class="val-input" type="number" oninput="calc()"></div>
+                        <div><label class="label">Gross $</label><input id="gross" class="val-input" type="number" value="0" oninput="calc()"></div>
                     </div>
-
-                    <button class="btn btn-primary" onclick="addLoad()">Add Trip to History</button>
+                    <button class="btn btn-primary" onclick="addLoad()">Add Load to Weekly Summary</button>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-header">Load History</div>
+                <div class="card-header">Weekly History</div>
                 <div style="overflow-x:auto">
-                    <table id="loadTable">
+                    <table>
                         <thead><tr><th>Route</th><th>Miles</th><th>Gross</th><th>Net</th><th></th></tr></thead>
                         <tbody id="loadList"></tbody>
                     </table>
                 </div>
-                <div style="padding:15px;"><button class="btn-outline" style="width:100%" onclick="clearHistory()">Reset All Data</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="fixed" class="tab-content">
+        <div class="card">
+            <div class="card-header">Adjust Weekly Business Costs</div>
+            <div class="card-body">
+                <div class="input-row"><label class="label">Truck Payment</label><input id="f_truck" class="val-input" type="number" value="800" oninput="calc()"></div>
+                <div class="input-row"><label class="label">Trailer Payment</label><input id="f_trailer" class="val-input" type="number" value="400" oninput="calc()"></div>
+                <div class="input-row"><label class="label">Insurance</label><input id="f_ins" class="val-input" type="number" value="350" oninput="calc()"></div>
+                <div class="input-row"><label class="label">Maintenance Rate ($/mi)</label><input id="m_rate" class="val-input" type="number" value="0.17" step="0.01" oninput="calc()"></div>
+                <div class="input-row"><label class="label">Revenue Split (Ex: 0.80)</label><input id="r_split" class="val-input" type="number" value="0.80" step="0.01" oninput="calc()"></div>
+                <div class="input-row"><label class="label">Fuel Net Price ($)</label><input id="f_net" class="val-input" type="number" value="3.25" step="0.01" oninput="calc()"></div>
+                <div class="input-row"><label class="label">Truck MPG</label><input id="mpg" class="val-input" type="number" value="6.5" step="0.1" oninput="calc()"></div>
+                <button class="btn btn-ghost" onclick="showTab('dashboard')">Back to Dashboard</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    let loads = JSON.parse(localStorage.getItem('tag_v5_data') || '[]');
+    let loads = JSON.parse(localStorage.getItem('tag_v6_data') || '[]');
+    let lastDestination = localStorage.getItem('last_dest') || "";
 
-    function addStop() {
-        const container = document.getElementById('stops-container');
-        const div = document.createElement('div');
-        div.className = 'stop-row';
-        div.innerHTML = `<input class="full-input stop-input" type="text" placeholder="Extra Stop City"><button onclick="this.parentElement.remove()" style="background:none; border:none; color:var(--danger); cursor:pointer; padding-bottom:10px;">✕</button>`;
-        container.appendChild(div);
+    function showTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
     }
 
-    function previewRoute() {
+    async function getMiles(start, end) {
+        if(!start || !end) return 0;
+        try {
+            document.getElementById('status').style.display = 'block';
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(start)}`);
+            const res2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(end)}`);
+            const d1 = await res.json();
+            const d2 = await res2.json();
+            
+            const route = await fetch(`https://router.project-osrm.org/route/v1/driving/${d1[0].lon},${d1[0].lat};${d2[0].lon},${d2[0].lat}?overview=false`);
+            const data = await route.json();
+            document.getElementById('status').style.display = 'none';
+            return Math.round(data.routes[0].distance * 0.000621371); // convert meters to miles
+        } catch (e) {
+            document.getElementById('status').style.display = 'none';
+            return 0;
+        }
+    }
+
+    async function autoCalcMiles() {
         const origin = document.getElementById('origin').value;
-        const dest = document.getElementById('destination').value;
-        const stops = Array.from(document.querySelectorAll('.stop-input')).map(i => i.value).filter(v => v);
-        
-        if(!origin || !dest) return alert("Enter at least Origin and Destination");
-        
-        let url = `https://www.google.com/maps/dir/${encodeURIComponent(origin)}/`;
-        stops.forEach(s => url += `${encodeURIComponent(s)}/`);
-        url += `${encodeURIComponent(dest)}/`;
-        window.open(url, '_blank');
+        const dest = document.getElementById('dest').value;
+
+        // Auto Loaded Miles
+        if(origin && dest) {
+            const miles = await getMiles(origin, dest);
+            document.getElementById('miles_loaded').value = miles;
+        }
+
+        // Auto Deadhead from last load
+        if(origin && lastDestination) {
+            const dh = await getMiles(lastDestination, origin);
+            document.getElementById('miles_deadhead').value = dh;
+        }
+        calc();
     }
 
     function calc() {
-        const gross = parseFloat(document.getElementById('gross').value) || 0;
         const loaded = parseFloat(document.getElementById('miles_loaded').value) || 0;
-        const deadhead = parseFloat(document.getElementById('miles_deadhead').value) || 0;
-        const totalMiles = loaded + deadhead;
-        
-        const revPct = parseFloat(document.getElementById('revPct').value) || 0;
+        const dh = parseFloat(document.getElementById('miles_deadhead').value) || 0;
+        const gross = parseFloat(document.getElementById('gross').value) || 0;
+        const split = parseFloat(document.getElementById('r_split').value) || 0.8;
+        const fuelN = parseFloat(document.getElementById('f_net').value) || 3.25;
         const mpg = parseFloat(document.getElementById('mpg').value) || 6.5;
-        const fuelN = parseFloat(document.getElementById('fuel_net').value) || 0;
-        const maintR = parseFloat(document.getElementById('maint_rate').value) || 0;
-        const fixed = parseFloat(document.getElementById('fixed_total').value) || 0;
-        const other = parseFloat(document.getElementById('exp_other').value) || 0;
+        const mRate = parseFloat(document.getElementById('m_rate').value) || 0.17;
+        const fixed = (parseFloat(document.getElementById('f_truck').value) || 0) + 
+                      (parseFloat(document.getElementById('f_trailer').value) || 0) + 
+                      (parseFloat(document.getElementById('f_ins').value) || 0);
 
-        const yourCut = gross * revPct;
-        const fuelCost = (totalMiles / mpg) * fuelN;
-        const maintCost = totalMiles * maintR;
-        const fixedShare = fixed / 5;
-        
-        const profit = yourCut - fuelCost - maintCost - fixedShare - other;
-        const rpm = totalMiles > 0 ? gross / totalMiles : 0;
-        const dhPct = totalMiles > 0 ? (deadhead / totalMiles) * 100 : 0;
-
-        document.getElementById('out_cut').innerText = money(yourCut);
-        document.getElementById('out_fuel').innerText = '-' + money(fuelCost);
-        document.getElementById('out_maint').innerText = '-' + money(maintCost);
-        document.getElementById('out_other').innerText = '-' + money(other);
-        document.getElementById('out_fixed').innerText = '-' + money(fixedShare);
-        
-        const pEl = document.getElementById('out_profit');
-        pEl.innerText = money(profit);
-        pEl.className = profit >= 0 ? 'pos' : 'neg';
-
-        document.getElementById('out_rpm').innerText = money(rpm);
-        document.getElementById('out_dh_pct').innerText = Math.round(dhPct) + '%';
-        document.getElementById('out_dh_pct').className = dhPct > 15 ? 'neg' : 'pos';
+        const totalMiles = loaded + dh;
+        const yourCut = gross * split;
+        const expenses = ((totalMiles/mpg)*fuelN) + (totalMiles*mRate) + (fixed/5);
+        const profit = yourCut - expenses;
 
         updateWeeklySummary();
+        return { profit, totalMiles };
     }
 
     function addLoad() {
-        const origin = document.getElementById('origin').value || "Unknown";
-        const dest = document.getElementById('destination').value || "Unknown";
-        const load = {
-            route: `${origin.split(',')[0]} → ${dest.split(',')[0]}`,
-            miles: (parseFloat(document.getElementById('miles_loaded').value) || 0) + (parseFloat(document.getElementById('miles_deadhead').value) || 0),
+        const res = calc();
+        const origin = document.getElementById('origin').value;
+        const dest = document.getElementById('dest').value;
+        
+        loads.push({
+            route: `${origin} to ${dest}`,
+            miles: res.totalMiles,
             gross: parseFloat(document.getElementById('gross').value) || 0,
-            profit: parseFloat(document.getElementById('out_profit').innerText.replace(/[^0-9.-]+/g,""))
-        };
-        loads.push(load);
+            profit: res.profit
+        });
+
+        lastDestination = dest;
+        localStorage.setItem('last_dest', lastDestination);
+        
+        document.getElementById('origin').value = "";
+        document.getElementById('dest').value = "";
+        document.getElementById('gross').value = 0;
+        
         saveAndRender();
     }
 
@@ -253,35 +211,29 @@
         const tGross = loads.reduce((sum, l) => sum + l.gross, 0);
         const tMiles = loads.reduce((sum, l) => sum + l.miles, 0);
         const tProfit = loads.reduce((sum, l) => sum + l.profit, 0);
+        
         document.getElementById('week_gross').innerText = money(tGross);
-        document.getElementById('week_miles').innerText = tMiles.toLocaleString();
-        document.getElementById('week_rpm').innerText = money(tMiles > 0 ? tGross / tMiles : 0);
         document.getElementById('week_profit').innerText = money(tProfit);
-        document.getElementById('week_profit').className = 'summary-value ' + (tProfit >= 0 ? 'pos' : 'neg');
+        document.getElementById('week_rpm').innerText = money(tMiles > 0 ? tGross / tMiles : 0);
     }
 
     function saveAndRender() {
-        localStorage.setItem('tag_v5_data', JSON.stringify(loads));
+        localStorage.setItem('tag_v6_data', JSON.stringify(loads));
         const list = document.getElementById('loadList');
         list.innerHTML = loads.map((l, i) => `
             <tr>
-                <td style="font-size:11px">${l.route}</td>
-                <td>${l.miles}</td>
-                <td>$${l.gross}</td>
+                <td>${l.route}</td><td>${l.miles}</td><td>$${l.gross}</td>
                 <td class="${l.profit >= 0 ? 'pos' : 'neg'}">${money(l.profit)}</td>
-                <td><button onclick="removeLoad(${i})" style="background:none; border:none; color:var(--danger); cursor:pointer">✕</button></td>
+                <td><button onclick="removeLoad(${i})" style="color:var(--danger); background:none; border:none; cursor:pointer">✕</button></td>
             </tr>
         `).join('');
         updateWeeklySummary();
     }
 
-    function removeLoad(i) { loads.splice(i, 1); saveAndRender(); }
-    function clearHistory() { if(confirm("Wipe all data?")) { loads = []; saveAndRender(); } }
+    function removeLoad(i) { loads.splice(i,1); saveAndRender(); }
     function money(v) { return '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
 
-    document.getElementById('date-display').innerText = new Date().toLocaleDateString();
     saveAndRender();
-    calc();
 </script>
 </body>
 </html>
