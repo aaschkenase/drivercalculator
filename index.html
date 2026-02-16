@@ -19,18 +19,15 @@
     body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 50px; }
     .container { max-width: 1400px; margin: 0 auto; padding: 15px; }
 
-    /* Navigation */
     nav { display: flex; gap: 10px; margin-bottom: 14px; border-bottom: 2px solid var(--border); padding-bottom: 10px; overflow-x: auto; }
     .nav-btn { padding: 10px 20px; background: transparent; border: none; color: var(--muted); font-weight: 800; cursor: pointer; border-radius: 10px; transition: 0.2s; white-space: nowrap; }
     .nav-btn.active { background: var(--accent); color: #000; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Dashboard Layout */
     .dash-grid { display: grid; grid-template-columns: 420px 1fr; gap: 20px; }
     @media (max-width: 1050px) { .dash-grid { grid-template-columns: 1fr; } }
 
-    /* Cards & Inputs */
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 20px; overflow: hidden; }
     .card-header { background: var(--soft); padding: 12px 15px; font-weight: 900; font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
     .card-body { padding: 15px; }
@@ -44,7 +41,6 @@
     }
     input:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(56,189,248,0.15); }
 
-    /* Top bar */
     .topbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px; flex-wrap: wrap; }
     .brand { font-size:24px; font-weight:900; letter-spacing:-1px; }
     .pill { display:inline-flex; gap:8px; align-items:center; background:#020617; border:1px solid var(--border); padding:8px 10px; border-radius: 999px; color: var(--muted); font-size: 12px; font-weight: 800; }
@@ -56,16 +52,13 @@
     .week-btn.danger { border-color: var(--danger); color: var(--danger); }
     .week-btn.danger:hover { background: var(--danger); color:#fff; }
 
-    /* Stats Bar */
     .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 18px; }
     .stat-box { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 14px; position: relative; }
     .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 900; }
     .stat-val { font-size: 24px; font-weight: 1000; }
 
-    /* Map */
     #map { height: 520px; width: 100%; border-radius: 14px; border: 1px solid var(--border); z-index: 0; }
 
-    /* Table */
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th { text-align: left; color: var(--muted); padding: 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; font-weight: 900; }
     td { padding: 10px; border-bottom: 1px solid var(--border); }
@@ -74,7 +67,6 @@
     .delete-btn { color: var(--danger); border-color: var(--danger); }
     .delete-btn:hover { background: var(--danger); color: white; }
 
-    /* Buttons */
     .btn { width: 100%; padding: 12px; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; margin-top: 10px; }
     .btn-primary { background: var(--accent); color: #000; }
     .btn-tool {
@@ -84,14 +76,12 @@
     }
     .btn-tool:hover { background: var(--card); border-color: var(--accent); }
 
-    /* Modal */
     #modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--card); border:1px solid var(--accent); padding:20px; border-radius:14px; z-index:1000; width:92%; max-width:420px; box-shadow:0 0 60px rgba(0,0,0,.8); }
     #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; }
     .breakdown-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
 
     .pos { color: var(--success); } .neg { color: var(--danger); }
 
-    /* Status + warnings */
     .status-msg {
       font-size: 12px; color: var(--warning); display: none; font-weight: 900;
       background: rgba(234, 179, 8, 0.12); padding: 10px 12px; border-radius: 12px;
@@ -104,7 +94,6 @@
     }
     .warn-banner b { color: #fff; }
 
-    /* Sticky add button on mobile */
     .sticky-add {
       display:none;
       position: fixed; bottom: 12px; left: 12px; right: 12px; z-index: 998;
@@ -327,7 +316,6 @@
   </div>
 </div>
 
-<!-- Sticky mobile add -->
 <div class="sticky-add no-print">
   <div style="display:flex; gap:10px; align-items:center; justify-content: space-between;">
     <div>
@@ -346,14 +334,13 @@
   const SETTINGS_KEY = "tagdriverpro_v1_settings";
   const GEO_CACHE_KEY = "tagdriverpro_v1_geo_cache";
 
-  // Backward compat keys (from your prior version)
   const LEGACY_LOAD_KEY = "tag_v14_data";
   const LEGACY_LAST_KEY = "tag_v14_last";
 
   function startOfWeekMonday(date = new Date()) {
     const d = new Date(date);
-    const day = d.getDay(); // 0=Sun,1=Mon...
-    const diff = (day === 0 ? -6 : 1 - day); // move to Monday
+    const day = d.getDay();
+    const diff = (day === 0 ? -6 : 1 - day);
     d.setDate(d.getDate() + diff);
     d.setHours(0,0,0,0);
     return d;
@@ -402,7 +389,6 @@
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) return JSON.parse(raw);
 
-    // Migration from legacy (if present)
     const legacyLoads = JSON.parse(localStorage.getItem(LEGACY_LOAD_KEY) || "[]");
     const legacyLast = JSON.parse(localStorage.getItem(LEGACY_LAST_KEY) || "null");
     const wk = startOfWeekMonday(new Date());
@@ -443,16 +429,11 @@
   function getCurrentWeek() {
     const id = state.currentWeekId;
     if (!state.weeks[id]) {
-      // create if missing
-      const d = new Date(id+"T00:00:00");
-      state.weeks[id] = { start: id, label: fmtWeekLabel(d), loads: [], lastDropCoords: null };
+      const d = new Date(id.split("_")[0] + "T00:00:00");
+      state.weeks[id] = { start: id.split("_")[0], label: fmtWeekLabel(d), loads: [], lastDropCoords: null };
       saveState();
     }
     return state.weeks[id];
-  }
-
-  function currentLoads() {
-    return getCurrentWeek().loads;
   }
 
   function setStatus(msg, show=true) {
@@ -482,11 +463,10 @@
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap' }).addTo(map);
     }
 
-    // Remove markers/polylines only (tile layer has no toGeoJSON)
     map.eachLayer(layer => { if (layer && layer.toGeoJSON) map.removeLayer(layer); });
 
     const pts = [];
-    const loads = currentLoads();
+    const loads = getCurrentWeek().loads;
 
     loads.forEach((l, i) => {
       if (l.coords && l.coords.start && l.coords.end) {
@@ -496,11 +476,9 @@
         pts.push([s.lat, s.lon], [e.lat, e.lon]);
 
         if (l.routeGeo && l.routeGeo.coordinates && l.routeGeo.coordinates.length) {
-          // GeoJSON line is [lon,lat]
           const latlngs = l.routeGeo.coordinates.map(c => [c[1], c[0]]);
           L.polyline(latlngs, { color: '#38bdf8', weight: 4, opacity: 0.70 }).addTo(map);
         } else {
-          // fallback straight line
           L.polyline([[s.lat,s.lon],[e.lat,e.lon]], { color: '#38bdf8', weight: 4, opacity: 0.55, dashArray: "6 8" }).addTo(map);
         }
       }
@@ -517,12 +495,8 @@
   async function fetchWithTimeout(url, ms=12000) {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), ms);
-    try {
-      const res = await fetch(url, { signal: ctrl.signal });
-      return res;
-    } finally {
-      clearTimeout(t);
-    }
+    try { return await fetch(url, { signal: ctrl.signal }); }
+    finally { clearTimeout(t); }
   }
   async function fetchRetry(url, tries=2, waitMs=600) {
     let lastErr = null;
@@ -530,7 +504,6 @@
       try {
         const res = await fetchWithTimeout(url, 15000);
         if (!res.ok) {
-          // retry on rate limiting or server errors
           if ((res.status === 429 || res.status >= 500) && i < tries-1) {
             await sleep(waitMs * (i+1));
             continue;
@@ -546,15 +519,9 @@
     throw lastErr;
   }
 
-  function loadGeoCache() {
-    return JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || "{}");
-  }
-  function saveGeoCache(cache) {
-    localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(cache));
-  }
-  function normalizeCity(q) {
-    return String(q || "").trim().toLowerCase().replace(/\s+/g," ");
-  }
+  function loadGeoCache() { return JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || "{}"); }
+  function saveGeoCache(cache) { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(cache)); }
+  function normalizeCity(q) { return String(q || "").trim().toLowerCase().replace(/\s+/g," "); }
 
   async function getLoc(city) {
     const q = normalizeCity(city);
@@ -563,16 +530,15 @@
     const cache = loadGeoCache();
     const hit = cache[q];
     const now = Date.now();
-    const TTL = 1000 * 60 * 60 * 24 * 30; // 30 days
+    const TTL = 1000 * 60 * 60 * 24 * 30;
     if (hit && hit.ts && (now - hit.ts) < TTL) return hit.data;
 
-    // NOTE: Nominatim rate limits. Cache helps a lot.
     const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&limit=1&q=${encodeURIComponent(city + ", USA")}`;
     const res = await fetchRetry(url, 2, 700);
     const data = await res.json();
     if (!data || !data[0]) return null;
 
-    const loc = data[0]; // {lat, lon, display_name...}
+    const loc = data[0];
     cache[q] = { ts: now, data: loc };
     saveGeoCache(cache);
     return loc;
@@ -600,7 +566,6 @@
       const locB = await getLoc(d);
       if (!locA || !locB) { setStatus("City not found (check spelling)", true); return; }
 
-      // Save coords for later
       const oLat = Number(locA.lat), oLon = Number(locA.lon);
       const dLat = Number(locB.lat), dLon = Number(locB.lon);
 
@@ -613,7 +578,6 @@
       const loaded = await osrmRouteMilesGeo(oLon, oLat, dLon, dLat);
       document.getElementById('mi_load').value = loaded.miles;
 
-      // Deadhead from last drop to new pickup
       const wk = getCurrentWeek();
       if (wk.lastDropCoords && wk.lastDropCoords.lat && wk.lastDropCoords.lon) {
         setStatus("Calculating deadhead…", true);
@@ -623,7 +587,6 @@
         document.getElementById('mi_dh').value = 0;
       }
 
-      // Store loaded route geo temporarily on inputs for addLoad()
       document.getElementById('origin').dataset.routeGeo = JSON.stringify(loaded.geo || null);
 
       setStatus("", false);
@@ -631,7 +594,6 @@
     } catch (e) {
       console.error(e);
       setStatus("Routing failed (try again in 30s)", true);
-      // Hide after a moment but keep message visible briefly
       setTimeout(() => setStatus("", false), 3500);
     }
   }
@@ -640,7 +602,6 @@
    * CALCULATIONS
    ***********************/
   function getSpecs() {
-    // Read from settings inputs (not from localStorage directly)
     const split = parseFloat(document.getElementById('s_split').value);
     const fuel = parseFloat(document.getElementById('s_fuel').value);
     const mpg  = parseFloat(document.getElementById('s_mpg').value);
@@ -680,14 +641,12 @@
     el.innerText = money(net);
     el.style.color = net >= 0 ? 'var(--success)' : 'var(--danger)';
 
-    // Helpful hint
     const grossRpm = miles > 0 ? (gross / miles) : 0;
     const beGross = miles > 0 ? ((fuel + maint + fixed + tolls) / s.split) : 0;
     const beRpm = miles > 0 ? (beGross / miles) : 0;
     document.getElementById('preview_hint').innerText =
       miles > 0 ? `Gross RPM: ${money(grossRpm)} • Break-even RPM: ${money(beRpm)}` : "";
 
-    // Sticky preview
     document.getElementById('sticky_preview').innerText = money(net);
     document.getElementById('sticky_preview').style.color = net >= 0 ? 'var(--success)' : 'var(--danger)';
   }
@@ -718,7 +677,6 @@
     const cut = gross * s.split;
     const net = cut - fuel - maint - fixed - tolls;
 
-    // Route geometry captured from loaded route (deadhead is separate)
     let routeGeo = null;
     try { routeGeo = JSON.parse(originEl.dataset.routeGeo || "null"); } catch(e){ routeGeo=null; }
 
@@ -730,7 +688,6 @@
       routeGeo
     });
 
-    // Save last drop for next deadhead
     if (Number.isFinite(dLat) && Number.isFinite(dLon)) {
       wk.lastDropCoords = { lat: dLat, lon: dLon };
     } else {
@@ -741,7 +698,6 @@
     updateUI();
     initMap();
 
-    // Clear inputs
     ['origin','dest','mi_load','mi_dh','cost_tolls','pay_gross'].forEach(i => document.getElementById(i).value = "");
     originEl.dataset.lat = ""; originEl.dataset.lon = ""; originEl.dataset.routeGeo = "";
     destEl.dataset.lat = ""; destEl.dataset.lon = "";
@@ -796,7 +752,6 @@
     const s = getSpecs();
     const totals = computeWeekTotals(wk);
 
-    // Weekly Stats
     document.getElementById('wk_gross').innerText = money(totals.gross);
     document.getElementById('wk_miles').innerText = totals.miles.toLocaleString();
     const wkProfitEl = document.getElementById('wk_profit');
@@ -805,13 +760,11 @@
 
     document.getElementById('wk_rpm').innerText = money(totals.rpm);
 
-    // Break-even RPM for week: sum of costs / split / miles
-    const wkCosts = (totals.gross * s.split) - totals.net; // rearranged: net = cut - costs => costs = cut - net
+    const wkCosts = (totals.gross * s.split) - totals.net;
     const wkBreakEvenGross = s.split > 0 ? (wkCosts / s.split) : 0;
     const wkBERpm = totals.miles > 0 ? wkBreakEvenGross / totals.miles : 0;
     document.getElementById('wk_be_rpm').innerText = money(wkBERpm);
 
-    // Render list
     document.getElementById('loadList').innerHTML = loads.map((l,i) => {
       const grossRpm = l.miles>0 ? (l.gross/l.miles) : 0;
       return `
@@ -829,7 +782,6 @@
       `;
     }).join('');
 
-    // Analytics (YTD = all weeks)
     const weekIds = Object.keys(state.weeks).sort().reverse();
     let yGross=0, yMiles=0, yNet=0, yFuel=0, yMaint=0;
     let bestWeek = null, worstWeek = null;
@@ -837,7 +789,6 @@
     weekIds.forEach(id => {
       const t = computeWeekTotals(state.weeks[id]);
       yGross += t.gross; yMiles += t.miles; yNet += t.net; yFuel += t.fuel; yMaint += t.maint;
-
       if (bestWeek === null || t.net > bestWeek.net) bestWeek = { id, net: t.net };
       if (worstWeek === null || t.net < worstWeek.net) worstWeek = { id, net: t.net };
     });
@@ -851,7 +802,6 @@
     document.getElementById('best_week').innerText = bestWeek ? money(bestWeek.net) : money(0);
     document.getElementById('worst_week').innerText = worstWeek ? money(worstWeek.net) : money(0);
 
-    // Week history table
     document.getElementById('weekHistory').innerHTML = weekIds.map(id => {
       const w = state.weeks[id];
       const t = computeWeekTotals(w);
@@ -869,12 +819,12 @@
     }).join('');
 
     updateWarnBanner();
-    preview(); // keep sticky preview consistent
+    preview();
     renderWeekSelect();
   }
 
   /***********************
-   * DETAILS MODAL + DELETE
+   * MODAL + DELETE
    ***********************/
   function viewDetail(i) {
     const wk = getCurrentWeek();
@@ -908,11 +858,9 @@
     const wk = getCurrentWeek();
     wk.loads.splice(i, 1);
 
-    // If week is empty, clear last drop too (and the in-memory value)
     if (wk.loads.length === 0) {
       wk.lastDropCoords = null;
     } else {
-      // Recompute last drop from last load if possible
       const last = wk.loads[wk.loads.length - 1];
       if (last?.coords?.end?.lat && last?.coords?.end?.lon) {
         wk.lastDropCoords = { lat: last.coords.end.lat, lon: last.coords.end.lon };
@@ -925,7 +873,7 @@
   }
 
   /***********************
-   * WEEK MANAGEMENT
+   * WEEK MANAGEMENT (FIXED)
    ***********************/
   function renderWeekSelect() {
     const sel = document.getElementById("weekSelect");
@@ -948,25 +896,27 @@
     setTimeout(initMap, 150);
   }
 
+  // ✅ FIXED: always creates a NEW week with a unique ID (even within the same calendar week)
   function startNewWeek() {
-    // Create a new week ID based on today (Monday start)
-    const wk = startOfWeekMonday(new Date());
-    const id = isoDate(wk);
+    if (!confirm("Start a new week? Current week will remain saved.")) return;
 
-    if (state.weeks[id]) {
-      state.currentWeekId = id;
-      saveState();
-      updateUI();
-      setTimeout(initMap, 150);
-      return;
+    const base = startOfWeekMonday(new Date());
+    let baseId = isoDate(base);
+    let id = baseId;
+
+    let counter = 1;
+    while (state.weeks[id]) {
+      counter++;
+      id = baseId + "_v" + counter;
     }
 
     state.weeks[id] = {
-      start: id,
-      label: fmtWeekLabel(wk),
+      start: baseId,
+      label: fmtWeekLabel(base) + (counter > 1 ? ` (${counter})` : ""),
       loads: [],
       lastDropCoords: null
     };
+
     state.currentWeekId = id;
     saveState();
     updateUI();
@@ -988,7 +938,6 @@
     localStorage.removeItem(STORE_KEY);
     localStorage.removeItem(SETTINGS_KEY);
     localStorage.removeItem(GEO_CACHE_KEY);
-    // clean legacy too
     localStorage.removeItem(LEGACY_LOAD_KEY);
     localStorage.removeItem(LEGACY_LAST_KEY);
     location.reload();
@@ -1029,7 +978,6 @@
       return;
     }
 
-    // YTD export (all weeks)
     const rows = [["Week", "Pickup", "Drop", "Miles", "Gross", "Net", "Fuel", "Fixed", "Maint", "Tolls"]];
     const weekIds = Object.keys(state.weeks).sort();
     weekIds.forEach(id => {
@@ -1099,7 +1047,6 @@ Worst load: ${worst ? `${worst.origin} -> ${worst.dest} | Net ${money(worst.net)
     document.getElementById('s_target_net').value = s.s_target_net;
     document.getElementById('s_tax').value = s.s_tax;
 
-    // Recalc when any setting changes (live)
     document.querySelectorAll("#settings input").forEach(inp => inp.addEventListener("input", () => {
       preview();
       updateUI();
@@ -1107,7 +1054,6 @@ Worst load: ${worst ? `${worst.origin} -> ${worst.dest} | Net ${money(worst.net)
   }
 
   function saveSettings() {
-    // Pull from inputs
     const s = {
       f_truck: parseFloat(document.getElementById('f_truck').value) || 0,
       f_trailer: parseFloat(document.getElementById('f_trailer').value) || 0,
@@ -1159,7 +1105,6 @@ Worst load: ${worst ? `${worst.origin} -> ${worst.dest} | Net ${money(worst.net)
     preview();
   }
 
-  // Enter key: move to next input (driver-friendly)
   const inputOrder = ["origin","dest","mi_load","mi_dh","cost_tolls","pay_gross"];
   inputOrder.forEach((id, idx) => {
     const el = document.getElementById(id);
@@ -1177,8 +1122,6 @@ Worst load: ${worst ? `${worst.origin} -> ${worst.dest} | Net ${money(worst.net)
    * INIT
    ***********************/
   function ensureWeekExistsForToday() {
-    // If current week is old and today is a new week, keep current (user choice),
-    // but ensure today exists in dropdown for convenience.
     const wk = startOfWeekMonday(new Date());
     const id = isoDate(wk);
     if (!state.weeks[id]) {
