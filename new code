@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
+    <title>Driver Profit Pro | Business Dashboard</title>
+    <style>
+        :root { 
+            --bg: #0f172a; --card: #1e293b; --border: #334155;
+            --accent: #38bdf8; --text: #f1f5f9; --muted: #94a3b8;
+            --success: #4ade80; --danger: #fb7185; --warning: #fbbf24;
+        }
+        * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 50px; line-height: 1.5; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 15px; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .logo { font-size: 22px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+        .logo span { color: var(--text); font-weight: 300; }
+
+        .main-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 950px) { .main-grid { grid-template-columns: 1fr 400px; align-items: start; } }
+
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); background: #ffffff05; font-weight: 700; font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        .card-body { padding: 20px; }
+
+        /* Profit Gauge */
+        .gauge-wrapper { margin: 10px 0 25px 0; }
+        .gauge-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; font-weight: 600; }
+        .gauge-container { height: 14px; background: #0f172a; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+        #gauge-bar { height: 100%; width: 0%; background: var(--danger); transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        /* Inputs */
+        .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 15px; }
+        .label-grp label { display: block; font-size: 14px; font-weight: 600; }
+        .label-grp span { font-size: 11px; color: var(--muted); display: block; }
+        input { background: #0f172a; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; width: 110px; text-align: right; font-weight: 600; font-size: 15px; }
+        input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); }
+        
+        /* Dashboard Stats */
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .kpi-box { background: #0f172a; padding: 15px; border-radius: 12px; border: 1px solid var(--border); transition: transform 0.2s; }
+        .kpi-box:hover { transform: translateY(-2px); }
+        .kpi-val { font-size: 22px; font-weight: 800; display: block; margin-top: 4px; }
+        .kpi-lab { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+
+        /* Table */
+        .table-card { overflow: hidden; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px 20px; color: var(--muted); font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        td { padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 14px; }
+
+        /* Buttons */
+        .btn { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-primary { background: var(--accent); color: var(--bg); width: 100%; }
+        .btn-primary:hover { background: #7dd3fc; transform: translateY(-1px); }
+        .btn-sec { background: var(--border); color: white; margin-top: 10px; width: 100%; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 12px; width: auto; }
+
+        .pos { color: var(--success); }
+        .neg { color: var(--danger); }
+        
+        @media print {
+            .left-col, .btn, .gauge-wrapper { display: none; }
+            .right-col { width: 100%; }
+            body { background: white; color: black; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="logo">DRIVER<span>PRO</span></div>
+        <div style="text-align:right">
+            <span id="date-display" style="font-size:12px; color:var(--muted); font-weight: 500;"></span>
+        </div>
+    </header>
+
+    <div class="main-grid">
+        <div class="left-col">
+            <div class="card">
+                <div class="card-header">Current Trip Entry</div>
+                <div class="card-body">
+                    <div class="input-row">
+                        <div class="label-grp"><label>Gross Revenue</label><span>Total load payment</span></div>
+                        <input id="gross" type="number" value="5500" oninput="calc()">
+                    </div>
+                    <div class="input-row">
+                        <div class="label-grp"><label>Total Miles</label><span>Loaded + Deadhead</span></div>
+                        <input id="miles" type="number" value="1800" oninput="calc()">
+                    </div>
+                    <div class="input-row">
+                        <div class="label-grp"><label>Fuel Price ($)</label><span>Average pump price</span></div>
+                        <input id="fuelPrice" type="number" step="0.01" value="3.68" oninput="calc()">
+                    </div>
+                    <div class="input-row">
+                        <div class="label-grp"><label>Fuel Discount</label><span>Off-pump savings</span></div>
+                        <input id="fuelDisc" type="number" step="0.01" value="0.45" oninput="calc()">
+                    </div>
+                    <div class="input-row">
+                        <div class="label-grp"><label>Days on Trip</label><span>For Per Diem logic</span></div>
+                        <input id="days" type="number" value="5" oninput="calc()">
+                    </div>
+                    <button class="btn btn-primary" onclick="addLoad()">
+                        Add to Weekly Summary
+                    </button>
+                </div>
+            </div>
+
+            <div class="card table-card">
+                <div class="card-header">Weekly Load Log</div>
+                <div class="table-wrap">
+                    <table id="loadTable">
+                        <thead>
+                            <tr><th>Miles</th><th>Gross</th><th>Est. Net</th><th></th></tr>
+                        </thead>
+                        <tbody id="loadList"></tbody>
+                    </table>
+                </div>
+                <div style="padding:15px; display: flex; gap: 10px;">
+                    <button class="btn btn-outline" onclick="clearHistory()">Reset All Data</button>
+                    <button class="btn btn-outline" onclick="window.print()">Print Weekly Report</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-col">
+            <div class="card" style="border-top: 4px solid var(--accent); position: sticky; top: 15px;">
+                <div class="card-header">Real-Time Performance</div>
+                <div class="card-body">
+                    <div class="gauge-wrapper">
+                        <div class="gauge-label">
+                            <span>Break-even Progress</span>
+                            <span id="gauge-percent">0%</span>
+                        </div>
+                        <div class="gauge-container"><div id="gauge-bar"></div></div>
+                    </div>
+                    
+                    <div class="kpi-grid">
+                        <div class="kpi-box">
+                            <span class="kpi-lab">Est. Net Profit</span>
+                            <span class="kpi-val" id="profit">$0.00</span>
+                        </div>
+                        <div class="kpi-box">
+                            <span class="kpi-lab">Break-Even Gross</span>
+                            <span class="kpi-val" id="breakEven" style="font-size:16px">$0.00</span>
+                        </div>
+                        <div class="kpi-box">
+                            <span class="kpi-lab">Profit / Mile</span>
+                            <span class="kpi-val" id="ppm">$0.00</span>
+                        </div>
+                        <div class="kpi-box">
+                            <span class="kpi-lab">Tax Deduction</span>
+                            <span class="kpi-val" id="perDiem" style="color:var(--warning)">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:25px; padding-top:20px; border-top:1px solid var(--border);">
+                        <div class="input-row">
+                            <span style="font-size:13px; font-weight: 600;">Revenue Split %</span>
+                            <input id="revPct" type="number" step="0.01" value="0.80" style="width:70px" oninput="calc()">
+                        </div>
+                        <div class="input-row">
+                            <span style="font-size:13px; font-weight: 600;">Weekly Fixed Costs</span>
+                            <input id="fixed" type="number" value="1550" style="width:90px" oninput="calc()">
+                        </div>
+                        <p style="font-size: 11px; color: var(--muted); margin-top: 15px;">
+                            * Logic: Fuel at 6.5 MPG. Maintenance at $0.17/mile. Fixed costs (Truck/Ins) are split per load based on 5-day week.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let loads = JSON.parse(localStorage.getItem('truck_loads_v2') || '[]');
+
+    function calc() {
+        const gross = parseFloat(document.getElementById('gross').value) || 0;
+        const miles = parseFloat(document.getElementById('miles').value) || 0;
+        const revPct = parseFloat(document.getElementById('revPct').value) || 0;
+        const pump = parseFloat(document.getElementById('fuelPrice').value) || 0;
+        const disc = parseFloat(document.getElementById('fuelDisc').value) || 0;
+        const days = parseFloat(document.getElementById('days').value) || 0;
+        const fixed = parseFloat(document.getElementById('fixed').value) || 0;
+
+        // Business Logic
+        const netFuelPrice = pump - disc;
+        const fuelCost = (miles / 6.5) * netFuelPrice; 
+        const maintCost = miles * 0.17;
+        const totalVariable = fuelCost + maintCost;
+        
+        const yourCut = gross * revPct;
+        const dailyFixed = fixed / 5;
+        const loadProfit = yourCut - totalVariable - dailyFixed;
+        
+        const breakEven = (totalVariable + dailyFixed) / revPct;
+        const perDiemVal = days * 69;
+
+        // Update Dashboard
+        document.getElementById('profit').innerText = money(loadProfit);
+        document.getElementById('profit').className = 'kpi-val ' + (loadProfit > 0 ? 'pos' : 'neg');
+        document.getElementById('breakEven').innerText = money(breakEven);
+        document.getElementById('ppm').innerText = money(miles > 0 ? loadProfit / miles : 0);
+        document.getElementById('perDiem').innerText = money(perDiemVal);
+
+        // Update Gauge
+        const gauge = document.getElementById('gauge-bar');
+        const percentLab = document.getElementById('gauge-percent');
+        const progress = Math.min((gross / breakEven) * 100, 100);
+        
+        gauge.style.width = progress + '%';
+        percentLab.innerText = Math.round(progress) + '%';
+        gauge.style.background = progress >= 100 ? 'var(--success)' : (progress > 70 ? 'var(--warning)' : 'var(--danger)');
+    }
+
+    function addLoad() {
+        const load = {
+            miles: document.getElementById('miles').value,
+            gross: document.getElementById('gross').value,
+            profit: document.getElementById('profit').innerText
+        };
+        loads.push(load);
+        saveAndRender();
+    }
+
+    function saveAndRender() {
+        localStorage.setItem('truck_loads_v2', JSON.stringify(loads));
+        const list = document.getElementById('loadList');
+        list.innerHTML = loads.map((l, i) => `
+            <tr>
+                <td>${l.miles} mi</td>
+                <td>$${l.gross}</td>
+                <td class="${l.profit.includes('-') ? 'neg' : 'pos'}" style="font-weight:700">${l.profit}</td>
+                <td style="text-align:right"><button onclick="removeLoad(${i})" style="color:var(--danger); background:none; border:none; cursor:pointer; font-size:16px;">✕</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function removeLoad(i) {
+        loads.splice(i, 1);
+        saveAndRender();
+    }
+
+    function clearHistory() {
+        if(confirm("Delete all saved loads? This cannot be undone.")) {
+            loads = [];
+            saveAndRender();
+        }
+    }
+
+    function money(v) { 
+        return '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); 
+    }
+
+    // Initialize
+    document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    saveAndRender();
+    calc();
+</script>
+</body>
+</html>
