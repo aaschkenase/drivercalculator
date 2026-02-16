@@ -3,71 +3,72 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
-    <title>Tag Driver Pro | Route Map</title>
+    <title>Tag Driver Command Center</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
         :root { 
-            --bg: #0b0f1a; --card: #161e2e; --border: #2d3748;
-            --accent: #38bdf8; --text: #f1f5f9; --muted: #94a3b8;
-            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+            --bg: #0f172a; --card: #1e293b; --border: #334155;
+            --accent: #38bdf8; --text: #f8fafc; --muted: #94a3b8;
+            --success: #22c55e; --danger: #ef4444; --warning: #eab308;
         }
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; }
+        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 50px; }
         .container { max-width: 1400px; margin: 0 auto; padding: 15px; }
-        
+
         /* Navigation */
-        nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 12px; overflow-x: auto; }
-        .nav-btn { padding: 12px 24px; border-radius: 10px; border: none; background: transparent; color: var(--muted); cursor: pointer; font-weight: 700; white-space: nowrap; transition: 0.2s; }
-        .nav-btn.active { background: var(--accent); color: var(--bg); }
+        nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        .nav-btn { padding: 10px 20px; background: transparent; border: none; color: var(--muted); font-weight: 700; cursor: pointer; border-radius: 8px; transition: 0.2s; }
+        .nav-btn.active { background: var(--accent); color: #000; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* Top Stats */
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .summary-box { background: #1e293b; border: 1px solid var(--border); padding: 15px 20px; border-radius: 16px; position: relative; }
-        .summary-box::after { content:""; position:absolute; left:0; top:10%; height:80%; width:4px; background:var(--accent); border-radius:0 4px 4px 0; }
-        .label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 4px; }
-        .value { font-size: 24px; font-weight: 900; }
+        /* Dashboard Layout */
+        .dash-grid { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        @media (max-width: 1000px) { .dash-grid { grid-template-columns: 1fr; } }
 
-        /* Inputs */
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 20px; }
-        .card-header { padding: 15px 20px; border-bottom: 1px solid var(--border); font-weight: 800; font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
-        .card-body { padding: 20px; }
+        /* Cards & Inputs */
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+        .card-header { background: rgba(255,255,255,0.05); padding: 12px 15px; font-weight: 700; font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        .card-body { padding: 15px; }
 
-        .input-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
-        .input-group { flex: 1; min-width: 180px; }
-        label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--muted); }
-        input { background: #0f172a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; font-weight: 600; width: 100%; font-size: 14px; }
+        .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        .input-group { flex: 1; }
+        label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 700; text-transform: uppercase; }
+        input { width: 100%; background: #020617; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 6px; font-weight: 600; }
         input:focus { border-color: var(--accent); outline: none; }
 
-        /* Map Layout */
-        .map-layout { display: grid; grid-template-columns: 350px 1fr; gap: 20px; height: 600px; }
-        #map { width: 100%; height: 100%; border-radius: 16px; border: 1px solid var(--border); z-index: 1; }
-        .sidebar { overflow-y: auto; padding-right: 5px; }
-        .trip-card { background: #1e293b; border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-        .trip-card:hover { border-color: var(--accent); background: #263245; }
-        .trip-route { font-weight: 800; font-size: 13px; color: var(--text); margin-bottom: 5px; }
-        .trip-meta { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; }
-        
-        @media (max-width: 900px) { .map-layout { grid-template-columns: 1fr; height: auto; } #map { height: 400px; } }
+        /* Stats Bar */
+        .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 12px; position: relative; }
+        .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 800; }
+        .stat-val { font-size: 24px; font-weight: 900; }
 
-        /* Utilities */
-        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
-        .btn-primary { background: var(--accent); color: var(--bg); width: 100%; margin-top: 10px; }
-        .btn-tool { background: #334155; color: var(--accent); padding: 8px 16px; border: 1px solid var(--border); }
-        .verified { color: var(--success); font-size: 10px; font-style: italic; display: none; margin-top: 4px; }
+        /* Map */
+        #map { height: 400px; width: 100%; border-radius: 12px; border: 1px solid var(--border); z-index: 0; }
 
-        .pos { color: var(--success); }
-        .neg { color: var(--danger); }
-        
+        /* Table */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; color: var(--muted); padding: 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid var(--border); }
+        .action-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .action-btn:hover { color: var(--text); border-color: var(--accent); }
+
+        /* Buttons */
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-primary { background: var(--accent); color: #000; }
+        .btn-tool { background: #334155; color: var(--accent); margin-top: 5px; font-size: 12px; padding: 8px; }
+
         /* Modal */
-        #modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--card); border:1px solid var(--accent); padding:25px; border-radius:20px; z-index:9999; width:90%; max-width:400px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); }
-        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9998; backdrop-filter: blur(4px); }
+        #modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--card); border:1px solid var(--accent); padding:20px; border-radius:12px; z-index:1000; width:90%; max-width:400px; box-shadow:0 0 50px black; }
+        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; }
         .breakdown-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
 
-        @media print { nav, .btn, .no-print { display: none !important; } body { background: white; color: black; } .card { border: 1px solid #ccc; } }
+        .pos { color: var(--success); } .neg { color: var(--danger); }
+        
+        @media print { nav, .btn, .no-print { display: none !important; } .container { width: 100%; } }
     </style>
 </head>
 <body>
@@ -76,96 +77,123 @@
 <div id="modal">
     <h3 style="margin-top:0; color:var(--accent)">Trip Financials</h3>
     <div id="modal-content"></div>
-    <button class="btn btn-primary" onclick="closeModal()" style="margin-top:15px">Close</button>
+    <button class="btn btn-primary" onclick="closeModal()">Close</button>
 </div>
 
 <div class="container">
     <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <div style="font-size:22px; font-weight:900;">TAG<span style="color:var(--accent)">DRIVER</span>PRO</div>
-        <div id="status-bar" style="font-size:12px; color:var(--warning); font-weight:700; display:none;">Processing...</div>
+        <div style="font-size:24px; font-weight:900; letter-spacing:-1px;">TAG<span style="color:var(--accent)">DRIVER</span>PRO</div>
+        <div id="status" style="font-size:12px; font-weight:700; color:var(--warning); display:none;">Processing...</div>
     </header>
 
     <nav class="no-print">
-        <button class="nav-btn active" onclick="switchTab('input')">Load Entry</button>
-        <button class="nav-btn" onclick="switchTab('map')">Week Map & Log</button>
-        <button class="nav-btn" onclick="switchTab('fixed')">Settings</button>
+        <button class="nav-btn active" onclick="showTab('dashboard', this)">Dashboard & Map</button>
+        <button class="nav-btn" onclick="showTab('analytics', this)">Yearly Reports</button>
+        <button class="nav-btn" onclick="showTab('settings', this)">Settings & Costs</button>
     </nav>
 
-    <div class="summary-grid">
-        <div class="summary-box"><span class="label">Booked Gross</span><div class="value" id="wk_gross">$0.00</div></div>
-        <div class="summary-box"><span class="label">Booked Miles</span><div class="value" id="wk_miles">0</div></div>
-        <div class="summary-box"><span class="label">Booked Profit</span><div class="value pos" id="wk_profit">$0.00</div></div>
-        <div class="summary-box"><span class="label">Avg RPM</span><div class="value" id="wk_rpm">$0.00</div></div>
-    </div>
+    <div id="dashboard" class="tab-content active">
+        <div class="stats-bar">
+            <div class="stat-box"><div class="stat-label">Weekly Gross</div><div class="stat-val" id="wk_gross">$0.00</div></div>
+            <div class="stat-box"><div class="stat-label">Weekly Miles</div><div class="stat-val" id="wk_miles">0</div></div>
+            <div class="stat-box"><div class="stat-label">Net Profit</div><div class="stat-val pos" id="wk_profit">$0.00</div></div>
+            <div class="stat-box"><div class="stat-label">Avg RPM</div><div class="stat-val" id="wk_rpm">$0.00</div></div>
+        </div>
 
-    <div id="input" class="tab-content active">
-        <div class="card no-print">
-            <div class="card-header">New Load Calculator</div>
-            <div class="card-body">
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>Pickup City</label><input id="origin" placeholder="City, State">
-                        <div id="orig-ok" class="verified"></div>
+        <div class="dash-grid">
+            <div>
+                <div class="card no-print">
+                    <div class="card-header">New Trip Entry</div>
+                    <div class="card-body">
+                        <div class="input-row">
+                            <div class="input-group"><label>Pickup</label><input id="origin" placeholder="City, State"></div>
+                            <div class="input-group"><label>Drop</label><input id="dest" placeholder="City, State"></div>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-bottom:15px;">
+                            <button class="btn-tool" onclick="calcRoute()">📡 Get Miles</button>
+                            <button class="btn-tool" onclick="verifyMap()">🗺️ Verify</button>
+                            <button class="btn-tool" onclick="checkTolls()">💰 Tolls</button>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group"><label>Loaded Mi</label><input id="mi_load" type="number" oninput="preview()"></div>
+                            <div class="input-group"><label>Deadhead</label><input id="mi_dh" type="number" oninput="preview()"></div>
+                            <div class="input-group"><label>Tolls ($)</label><input id="cost_tolls" type="number" value="0" oninput="preview()"></div>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group"><label>Gross Pay ($)</label><input id="pay_gross" type="number" oninput="preview()"></div>
+                        </div>
+                        <div style="background:#020617; padding:10px; border-radius:6px; margin-bottom:10px; text-align:center;">
+                            <span style="font-size:11px; color:var(--muted); text-transform:uppercase;">Trip Net Preview</span>
+                            <div id="preview_net" style="font-size:20px; font-weight:800; color:var(--text);">$0.00</div>
+                        </div>
+                        <button class="btn btn-primary" onclick="addLoad()">Add Load to Week</button>
                     </div>
-                    <div class="input-group">
-                        <label>Drop City</label><input id="dest" placeholder="City, State">
-                        <div id="dest-ok" class="verified"></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="card">
+                    <div class="card-header">Weekly Route Map</div>
+                    <div class="card-body" style="padding:0;">
+                        <div id="map"></div>
                     </div>
                 </div>
-                <div style="display:flex; gap:10px; margin-bottom:20px;">
-                    <button class="btn btn-tool" style="background:var(--accent); color:#000;" onclick="calculateRoute()">📡 Calculate Miles</button>
-                    <button class="btn btn-tool" onclick="verifyGoogle()">🗺️ Verify Map</button>
-                    <button class="btn btn-tool" onclick="openTollGuru()">💰 Check Tolls</button>
-                </div>
+            </div>
+        </div>
 
-                <div class="input-row">
-                    <div class="input-group"><label>Loaded Miles</label><input id="mi_load" type="number" oninput="calcPreview()"></div>
-                    <div class="input-group"><label>Deadhead Miles</label><input id="mi_dh" type="number" oninput="calcPreview()"></div>
-                    <div class="input-group"><label>Tolls/Lumper ($)</label><input id="cost_tolls" type="number" value="0" oninput="calcPreview()"></div>
-                </div>
-                <div class="input-row">
-                    <div class="input-group"><label>Gross Pay ($)</label><input id="pay_gross" type="number" oninput="calcPreview()"></div>
-                    <div class="input-group"><label>Trip Net (Preview)</label><div id="trip_net" style="font-size:18px; font-weight:800; padding:10px; color:var(--muted);">$0.00</div></div>
-                </div>
-                <button class="btn btn-primary" onclick="addLoad()">Book Load</button>
+        <div class="card">
+            <div class="card-header">Weekly Load Log</div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Route</th><th>Miles</th><th>Gross</th><th>Net</th><th>Actions</th></tr></thead>
+                    <tbody id="loadList"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <div id="map" class="tab-content">
-        <div class="map-layout">
-            <div class="sidebar">
-                <div id="trip-list"></div>
-                <button class="btn btn-tool" style="width:100%; margin-top:10px;" onclick="if(confirm('Clear all?')){localStorage.clear();location.reload();}">Reset Week</button>
-            </div>
-            <div id="map"></div>
+    <div id="analytics" class="tab-content">
+        <div class="stats-bar">
+            <div class="stat-box"><div class="stat-label">YTD Gross</div><div class="stat-val" id="ytd_gross">$0.00</div></div>
+            <div class="stat-box"><div class="stat-label">YTD Net Profit</div><div class="stat-val pos" id="ytd_profit">$0.00</div></div>
+            <div class="stat-box"><div class="stat-label">Est. Tax (25%)</div><div class="stat-val neg" id="ytd_tax">$0.00</div></div>
         </div>
+        <div class="card">
+            <div class="card-header">Business Health</div>
+            <div class="card-body">
+                <div class="breakdown-row"><span>Operating Expense Ratio:</span><span id="oer_val">0%</span></div>
+                <div class="breakdown-row"><span>Total Fuel Spend (YTD):</span><span id="ytd_fuel" class="neg">$0.00</span></div>
+                <div class="breakdown-row"><span>Total Maintenance Saved:</span><span id="ytd_maint" class="pos">$0.00</span></div>
+            </div>
+        </div>
+        <button class="btn btn-primary" style="background:var(--danger); width:auto;" onclick="if(confirm('Reset all?')){localStorage.clear();location.reload();}">Factory Reset Data</button>
     </div>
 
-    <div id="fixed" class="tab-content">
-        <div class="card">
-            <div class="card-header">Weekly Fixed Costs</div>
-            <div class="card-body">
-                <div class="input-row">
-                    <div class="input-group"><label>Truck Pmt</label><input id="f_truck" type="number" value="800"></div>
-                    <div class="input-group"><label>Trailer Pmt</label><input id="f_trailer" type="number" value="400"></div>
-                    <div class="input-group"><label>Insurance</label><input id="f_ins" type="number" value="350"></div>
-                </div>
-                <div class="input-row">
-                    <div class="input-group"><label>Advances</label><input id="f_adv" type="number" value="0"></div>
-                    <div class="input-group"><label>Food/Misc</label><input id="f_food" type="number" value="0"></div>
-                    <div class="input-group"><label>Repairs</label><input id="f_rep" type="number" value="0"></div>
+    <div id="settings" class="tab-content">
+        <div class="dash-grid">
+            <div class="card">
+                <div class="card-header">Fixed Weekly Costs</div>
+                <div class="card-body">
+                    <div class="input-row"><div class="input-group"><label>Truck Pmt</label><input id="f_truck" type="number" value="800"></div></div>
+                    <div class="input-row"><div class="input-group"><label>Trailer Pmt</label><input id="f_trailer" type="number" value="400"></div></div>
+                    <div class="input-row"><div class="input-group"><label>Insurance</label><input id="f_ins" type="number" value="350"></div></div>
                 </div>
             </div>
-        </div>
-        <div class="card">
-            <div class="card-header">Specs</div>
-            <div class="card-body">
-                <div class="input-row">
-                    <div class="input-group"><label>Split %</label><input id="spec_split" type="number" value="0.80" step="0.01"></div>
-                    <div class="input-group"><label>Fuel Price</label><input id="spec_fuel" type="number" value="3.25" step="0.01"></div>
-                    <div class="input-group"><label>MPG</label><input id="spec_mpg" type="number" value="6.5" step="0.1"></div>
-                    <div class="input-group"><label>Maint ($/mi)</label><input id="spec_maint" type="number" value="0.17" step="0.01"></div>
+            <div class="card">
+                <div class="card-header">Variable Weekly Deductions</div>
+                <div class="card-body">
+                    <div class="input-row"><div class="input-group"><label>Advances</label><input id="f_adv" type="number" value="0"></div></div>
+                    <div class="input-row"><div class="input-group"><label>Food/Personal</label><input id="f_food" type="number" value="0"></div></div>
+                    <div class="input-row"><div class="input-group"><label>Repairs</label><input id="f_rep" type="number" value="0"></div></div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">Specs & Rates</div>
+                <div class="card-body">
+                    <div class="input-row"><div class="input-group"><label>Split % (0.80)</label><input id="s_split" type="number" value="0.80" step="0.01"></div></div>
+                    <div class="input-row"><div class="input-group"><label>Fuel Price</label><input id="s_fuel" type="number" value="3.25" step="0.01"></div></div>
+                    <div class="input-row"><div class="input-group"><label>MPG</label><input id="s_mpg" type="number" value="6.5" step="0.1"></div></div>
+                    <div class="input-row"><div class="input-group"><label>Maint ($/mi)</label><input id="s_maint" type="number" value="0.17" step="0.01"></div></div>
                 </div>
             </div>
         </div>
@@ -173,262 +201,217 @@
 </div>
 
 <script>
-    let loads = JSON.parse(localStorage.getItem('tag_v13_data') || '[]');
-    let lastCoords = JSON.parse(localStorage.getItem('tag_v13_coords') || 'null'); // {lat, lon}
-    let mapInstance = null;
+    let loads = JSON.parse(localStorage.getItem('tag_final_data') || '[]');
+    let map = null;
 
-    // --- LOGIC: TABS ---
-    function switchTab(id) {
-        document.querySelectorAll('.tab-content').forEach(d => d.style.display='none');
+    // --- SETUP & NAVIGATION ---
+    function showTab(id, btn) {
+        document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).style.display='block';
-        
-        // Find button to set active
-        const btnIndex = ['input','map','fixed'].indexOf(id);
-        if(btnIndex >=0) document.querySelectorAll('.nav-btn')[btnIndex].classList.add('active');
-
-        if(id === 'map') renderMap();
+        document.getElementById(id).classList.add('active');
+        btn.classList.add('active');
+        if(id === 'dashboard') setTimeout(initMap, 200); // Fix map render issue
     }
 
-    // --- LOGIC: ROUTING ---
-    async function getGeo(city) {
+    // --- MAP ENGINE ---
+    function initMap() {
+        if(!map) {
+            map = L.map('map').setView([39.82, -98.58], 4);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+        }
+        
+        // Clear layers
+        map.eachLayer(layer => { if(!!layer.toGeoJSON) map.removeLayer(layer); });
+
+        const points = [];
+        loads.forEach((l, i) => {
+            if(l.coords && l.coords.start) {
+                L.marker([l.coords.start.lat, l.coords.start.lon]).addTo(map).bindPopup(`Load ${i+1} Pickup`);
+                L.marker([l.coords.end.lat, l.coords.end.lon]).addTo(map).bindPopup(`Load ${i+1} Drop`);
+                points.push([l.coords.start.lat, l.coords.start.lon]);
+                points.push([l.coords.end.lat, l.coords.end.lon]);
+                
+                // Draw line
+                L.polyline([[l.coords.start.lat, l.coords.start.lon], [l.coords.end.lat, l.coords.end.lon]], {color: '#38bdf8'}).addTo(map);
+            }
+        });
+
+        if(points.length > 0) map.fitBounds(points, {padding: [50,50]});
+        map.invalidateSize();
+    }
+
+    // --- ROUTING ---
+    async function getLoc(city) {
         try {
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}, USA&limit=1`);
             const data = await res.json();
-            return data[0]; // {lat, lon, display_name}
+            return data[0];
         } catch(e) { return null; }
     }
 
-    async function calculateRoute() {
-        const oStr = document.getElementById('origin').value;
-        const dStr = document.getElementById('dest').value;
-        const status = document.getElementById('status-bar');
+    async function calcRoute() {
+        const o = document.getElementById('origin').value;
+        const d = document.getElementById('dest').value;
+        const stat = document.getElementById('status');
         
-        if(!oStr || !dStr) return alert("Enter Pickup and Drop cities.");
+        if(!o || !d) return alert("Enter cities first");
         
-        status.style.display = 'block'; status.innerText = "Finding Cities...";
-        
-        const locA = await getGeo(oStr);
-        const locB = await getGeo(dStr);
+        stat.style.display = 'block'; stat.innerText = "Finding Cities...";
+        const locA = await getLoc(o);
+        const locB = await getLoc(d);
 
-        if(!locA || !locB) {
-            status.innerText = "Error: City not found.";
-            return;
-        }
+        if(!locA || !locB) { stat.innerText = "City Not Found"; return; }
 
-        // Show verification
-        document.getElementById('orig-ok').innerText = `✓ ${locA.display_name.split(',')[0]}, ${locA.display_name.split(',')[2]}`;
-        document.getElementById('orig-ok').style.display = 'block';
-        document.getElementById('dest-ok').innerText = `✓ ${locB.display_name.split(',')[0]}, ${locB.display_name.split(',')[2]}`;
-        document.getElementById('dest-ok').style.display = 'block';
-
-        status.innerText = "Routing...";
-        
-        // Route A -> B
+        stat.innerText = "Routing...";
         const rRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${locA.lon},${locA.lat};${locB.lon},${locB.lat}?overview=false`);
         const rData = await rRes.json();
-        const loaded = Math.round(rData.routes[0].distance * 0.000621371);
-        document.getElementById('mi_load').value = loaded;
+        
+        const miles = Math.round(rData.routes[0].distance * 0.000621371);
+        document.getElementById('mi_load').value = miles;
+        
+        // Save coords for map
+        document.getElementById('origin').dataset.lat = locA.lat;
+        document.getElementById('origin').dataset.lon = locA.lon;
+        document.getElementById('dest').dataset.lat = locB.lat;
+        document.getElementById('dest').dataset.lon = locB.lon;
 
-        // Deadhead (Last Drop -> A)
-        let dh = 0;
-        if(lastCoords) {
-            const dhRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${lastCoords.lon},${lastCoords.lat};${locA.lon},${locA.lat}?overview=false`);
-            const dhData = await dhRes.json();
-            dh = Math.round(dhData.routes[0].distance * 0.000621371);
-            document.getElementById('mi_dh').value = dh;
-        }
-
-        // Save coords temporarily for booking
-        document.getElementById('origin').dataset.coords = JSON.stringify({lat: locA.lat, lon: locA.lon});
-        document.getElementById('dest').dataset.coords = JSON.stringify({lat: locB.lat, lon: locB.lon});
-
-        status.style.display = 'none';
-        calcPreview();
+        stat.style.display = 'none';
+        preview();
     }
 
-    // --- LOGIC: CALCULATIONS ---
-    function getSettings() {
+    // --- CALCULATIONS ---
+    function getSpecs() {
         return {
-            split: parseFloat(document.getElementById('spec_split').value) || 0.8,
-            fuel: parseFloat(document.getElementById('spec_fuel').value) || 3.25,
-            mpg: parseFloat(document.getElementById('spec_mpg').value) || 6.5,
-            maint: parseFloat(document.getElementById('spec_maint').value) || 0.17,
+            split: parseFloat(document.getElementById('s_split').value) || 0.8,
+            fuel: parseFloat(document.getElementById('s_fuel').value) || 3.25,
+            mpg: parseFloat(document.getElementById('s_mpg').value) || 6.5,
+            maint: parseFloat(document.getElementById('s_maint').value) || 0.17,
             fixed: ['f_truck','f_trailer','f_ins','f_adv','f_food','f_rep'].reduce((s,id)=>s+(parseFloat(document.getElementById(id).value)||0),0)
         };
     }
 
-    function calcPreview() {
-        // This ONLY calculates the current input. Does NOT touch weekly stats.
-        const s = getSettings();
+    function preview() {
+        const s = getSpecs();
         const gross = parseFloat(document.getElementById('pay_gross').value) || 0;
-        const miles = (parseFloat(document.getElementById('mi_load').value) || 0) + (parseFloat(document.getElementById('mi_dh').value) || 0);
+        const miles = (parseFloat(document.getElementById('mi_load').value)||0) + (parseFloat(document.getElementById('mi_dh').value)||0);
         const tolls = parseFloat(document.getElementById('cost_tolls').value) || 0;
 
-        const costFuel = (miles / s.mpg) * s.fuel;
-        const costMaint = miles * s.maint;
-        const costFixed = s.fixed / 5; // Daily share
+        const fuel = (miles/s.mpg)*s.fuel;
+        const maint = miles*s.maint;
+        const fixed = s.fixed/5;
+        const net = (gross*s.split) - fuel - maint - fixed - tolls;
 
-        const net = (gross * s.split) - costFuel - costMaint - costFixed - tolls;
-        
-        const el = document.getElementById('trip_net');
-        el.innerText = '$' + net.toLocaleString(undefined, {minimumFractionDigits:2});
-        el.className = net >= 0 ? 'pos' : 'neg';
+        const el = document.getElementById('preview_net');
+        el.innerText = money(net);
+        el.style.color = net>=0 ? 'var(--success)' : 'var(--danger)';
     }
 
     function addLoad() {
         const gross = parseFloat(document.getElementById('pay_gross').value) || 0;
-        const loaded = parseFloat(document.getElementById('mi_load').value) || 0;
-        const dh = parseFloat(document.getElementById('mi_dh').value) || 0;
+        const miles = (parseFloat(document.getElementById('mi_load').value)||0) + (parseFloat(document.getElementById('mi_dh').value)||0);
         const tolls = parseFloat(document.getElementById('cost_tolls').value) || 0;
         
-        // Coords
-        const oC = document.getElementById('origin').dataset.coords;
-        const dC = document.getElementById('dest').dataset.coords;
+        // Get Coords
+        const oLat = document.getElementById('origin').dataset.lat;
+        const oLon = document.getElementById('origin').dataset.lon;
+        const dLat = document.getElementById('dest').dataset.lat;
+        const dLon = document.getElementById('dest').dataset.lon;
 
-        if(!gross || !loaded) return alert("Enter Gross Pay and Miles");
+        const s = getSpecs();
+        const fuel = (miles/s.mpg)*s.fuel;
+        const maint = miles*s.maint;
+        const fixed = s.fixed/5;
+        const net = (gross*s.split) - fuel - maint - fixed - tolls;
 
-        // Calculate Final Profit
-        const s = getSettings();
-        const miles = loaded + dh;
-        const costFuel = (miles / s.mpg) * s.fuel;
-        const costMaint = miles * s.maint;
-        const costFixed = s.fixed / 5;
-        const net = (gross * s.split) - costFuel - costMaint - costFixed - tolls;
-
-        const load = {
-            id: Date.now(),
+        loads.push({
             origin: document.getElementById('origin').value,
             dest: document.getElementById('dest').value,
-            coords: { start: oC ? JSON.parse(oC) : null, end: dC ? JSON.parse(dC) : null },
             gross, miles, net,
-            details: { fuel: costFuel, maint: costMaint, fixed: costFixed, tolls, split: gross*s.split }
-        };
-
-        loads.push(load);
-        
-        // Update Persisted Data
-        if(dC) {
-            lastCoords = JSON.parse(dC);
-            localStorage.setItem('tag_v13_coords', dC);
-        }
-        localStorage.setItem('tag_v13_data', JSON.stringify(loads));
-
-        // Clear Inputs
-        ['origin','dest','mi_load','mi_dh','pay_gross','cost_tolls'].forEach(id => document.getElementById(id).value = "");
-        document.getElementById('trip_net').innerText = "$0.00";
-        document.querySelectorAll('.verified').forEach(e => e.style.display='none');
-        
-        updateWeeklyStats();
-        alert("Load Booked!");
-    }
-
-    function updateWeeklyStats() {
-        // Sum ONLY the loads array
-        const tg = loads.reduce((s,l) => s + l.gross, 0);
-        const tm = loads.reduce((s,l) => s + l.miles, 0);
-        const tp = loads.reduce((s,l) => s + l.net, 0);
-
-        document.getElementById('wk_gross').innerText = '$' + tg.toLocaleString();
-        document.getElementById('wk_miles').innerText = tm.toLocaleString();
-        document.getElementById('wk_profit').innerText = '$' + tp.toLocaleString(undefined, {minimumFractionDigits:2});
-        document.getElementById('wk_rpm').innerText = '$' + (tm > 0 ? (tg/tm).toFixed(2) : "0.00");
-    }
-
-    function renderMap() {
-        if(mapInstance) {
-            mapInstance.remove(); // clear old map
-        }
-        
-        document.getElementById('trip-list').innerHTML = '';
-
-        if(loads.length === 0) {
-            document.getElementById('map').innerHTML = '<div style="color:white; text-align:center; padding-top:200px;">No loads booked yet</div>';
-            return;
-        }
-
-        // Init Map
-        mapInstance = L.map('map').setView([39.82, -98.58], 4);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(mapInstance);
-
-        const bounds = [];
-        const latlngs = [];
-
-        loads.forEach((l, i) => {
-            // Sidebar Item
-            const item = document.createElement('div');
-            item.className = 'trip-card';
-            item.innerHTML = `
-                <div class="trip-route">${i+1}. ${l.origin} ➝ ${l.dest}</div>
-                <div class="trip-meta">
-                    <span>${l.miles} mi</span>
-                    <span class="${l.net>=0?'pos':'neg'}">$${l.net.toFixed(0)}</span>
-                </div>
-                <button class="btn-tool" style="margin-top:5px; font-size:10px; width:100%" onclick="viewDetail(${i})">View Breakdown</button>
-            `;
-            document.getElementById('trip-list').appendChild(item);
-
-            // Map Pins
-            if(l.coords && l.coords.start && l.coords.end) {
-                L.marker([l.coords.start.lat, l.coords.start.lon]).addTo(mapInstance).bindPopup(`Load ${i+1} Pickup`);
-                L.marker([l.coords.end.lat, l.coords.end.lon]).addTo(mapInstance).bindPopup(`Load ${i+1} Drop`);
-                
-                const line = [[l.coords.start.lat, l.coords.start.lon], [l.coords.end.lat, l.coords.end.lon]];
-                latlngs.push(line);
-                bounds.push([l.coords.start.lat, l.coords.start.lon]);
-                bounds.push([l.coords.end.lat, l.coords.end.lon]);
-            }
+            details: { fuel, maint, fixed, tolls, cut: gross*s.split },
+            coords: (oLat && dLat) ? { start:{lat:oLat, lon:oLon}, end:{lat:dLat, lon:dLon} } : null
         });
 
-        if(latlngs.length > 0) {
-            L.polyline(latlngs, {color: '#38bdf8', weight: 3}).addTo(mapInstance);
-            mapInstance.fitBounds(bounds, {padding: [50,50]});
-        }
+        localStorage.setItem('tag_final_data', JSON.stringify(loads));
+        updateUI();
+        initMap(); // Redraw map immediately
+        
+        // Clear inputs
+        ['origin','dest','mi_load','mi_dh','cost_tolls','pay_gross'].forEach(i => document.getElementById(i).value="");
+        document.getElementById('preview_net').innerText = "$0.00";
+    }
+
+    function updateUI() {
+        const tGross = loads.reduce((s,l) => s+l.gross, 0);
+        const tMiles = loads.reduce((s,l) => s+l.miles, 0);
+        const tNet = loads.reduce((s,l) => s+l.net, 0);
+        
+        // Weekly Stats
+        document.getElementById('wk_gross').innerText = money(tGross);
+        document.getElementById('wk_miles').innerText = tMiles.toLocaleString();
+        document.getElementById('wk_profit').innerText = money(tNet);
+        document.getElementById('wk_rpm').innerText = money(tMiles>0 ? tGross/tMiles : 0);
+
+        // Analytics
+        document.getElementById('ytd_gross').innerText = money(tGross);
+        document.getElementById('ytd_profit').innerText = money(tNet);
+        document.getElementById('ytd_tax').innerText = money(tNet * 0.25);
+        document.getElementById('oer_val').innerText = tGross>0 ? Math.round(((tGross-tNet)/tGross)*100)+'%' : '0%';
+        
+        // YTD Totals
+        const totalFuel = loads.reduce((s,l)=>s+l.details.fuel, 0);
+        const totalMaint = loads.reduce((s,l)=>s+l.details.maint, 0);
+        document.getElementById('ytd_fuel').innerText = money(totalFuel);
+        document.getElementById('ytd_maint').innerText = money(totalMaint);
+
+        // Render List
+        document.getElementById('loadList').innerHTML = loads.map((l,i) => `
+            <tr>
+                <td style="font-weight:700">${l.origin} <span style="color:var(--accent)">➜</span> ${l.dest}</td>
+                <td>${l.miles}</td>
+                <td>${money(l.gross)}</td>
+                <td class="${l.net>=0?'pos':'neg'}">${money(l.net)}</td>
+                <td>
+                    <button class="action-btn" onclick="viewDetail(${i})">Detail</button>
+                    <button class="action-btn" style="color:var(--danger); border-color:var(--danger)" onclick="del(${i})">X</button>
+                </td>
+            </tr>
+        `).join('');
     }
 
     function viewDetail(i) {
         const l = loads[i];
-        const h = `
-            <div class="breakdown-row"><span>Gross Pay:</span><span>$${l.gross.toFixed(2)}</span></div>
-            <div class="breakdown-row"><span>Your Split:</span><span class="pos">$${l.details.split.toFixed(2)}</span></div>
-            <div class="breakdown-row"><span>Fuel Cost:</span><span class="neg">-$${l.details.fuel.toFixed(2)}</span></div>
-            <div class="breakdown-row"><span>Fixed Cost Share:</span><span class="neg">-$${l.details.fixed.toFixed(2)}</span></div>
-            <div class="breakdown-row"><span>Tolls/Fees:</span><span class="neg">-$${l.details.tolls.toFixed(2)}</span></div>
-            <div class="breakdown-row" style="border-top:2px solid var(--accent); margin-top:10px; font-weight:800; font-size:18px;">
-                <span>Net Profit:</span><span class="${l.net>=0?'pos':'neg'}">$${l.net.toFixed(2)}</span>
+        document.getElementById('modal-content').innerHTML = `
+            <div class="breakdown-row"><span>Gross:</span><span>${money(l.gross)}</span></div>
+            <div class="breakdown-row"><span>Your Cut:</span><span class="pos">${money(l.details.cut)}</span></div>
+            <div class="breakdown-row"><span>Fuel:</span><span class="neg">-${money(l.details.fuel)}</span></div>
+            <div class="breakdown-row"><span>Fixed Share:</span><span class="neg">-${money(l.details.fixed)}</span></div>
+            <div class="breakdown-row"><span>Maint:</span><span class="neg">-${money(l.details.maint)}</span></div>
+            <div class="breakdown-row"><span>Tolls:</span><span class="neg">-${money(l.details.tolls)}</span></div>
+            <div class="breakdown-row" style="font-weight:900; font-size:18px; border-top:2px solid var(--accent); margin-top:10px;">
+                <span>NET PROFIT:</span><span class="${l.net>=0?'pos':'neg'}">${money(l.net)}</span>
             </div>
         `;
-        document.getElementById('modal-content').innerHTML = h;
         document.getElementById('modal').style.display='block';
         document.getElementById('overlay').style.display='block';
     }
 
-    function closeModal() {
-        document.getElementById('modal').style.display='none';
-        document.getElementById('overlay').style.display='none';
+    function closeModal() { document.getElementById('modal').style.display='none'; document.getElementById('overlay').style.display='none'; }
+    function del(i) { loads.splice(i,1); localStorage.setItem('tag_final_data', JSON.stringify(loads)); updateUI(); initMap(); }
+    function money(v) { return '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:2}); }
+    
+    // Tools
+    function verifyMap() {
+        const o=document.getElementById('origin').value; const d=document.getElementById('dest').value;
+        if(o&&d) window.open(`https://www.google.com/maps/dir/${encodeURIComponent(o)}/${encodeURIComponent(d)}`);
     }
-
-    function verifyGoogle() {
-        const o = document.getElementById('origin').value;
-        const d = document.getElementById('dest').value;
-        if(o&&d) window.open(`http://maps.google.com/maps?q=from:${encodeURIComponent(o)}+to:${encodeURIComponent(d)}`);
-    }
-
-    function openTollGuru() {
-        const o = document.getElementById('origin').value;
-        const d = document.getElementById('dest').value;
-        if(o&&d) {
-            navigator.clipboard.writeText(`${o} to ${d}`);
-            alert("Route copied. Paste into TollGuru.");
-            window.open('https://tollguru.com/toll-calculator');
-        }
+    function checkTolls() {
+        const o=document.getElementById('origin').value; const d=document.getElementById('dest').value;
+        if(o&&d) { navigator.clipboard.writeText(o+" to "+d); alert("Copied. Paste into TollGuru."); window.open('https://tollguru.com/toll-calculator'); }
     }
 
     // Init
-    switchTab('input');
-    updateWeeklyStats();
+    updateUI();
+    setTimeout(initMap, 500); // Allow DOM to settle
 </script>
 </body>
 </html>
